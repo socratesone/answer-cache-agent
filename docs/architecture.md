@@ -86,4 +86,4 @@ Consequences the evaluation report demonstrates: a repeatedly selected same-inte
 - **Retry is the caller's job.** Adapters run with `max_retries=0`; an `uncertain` call yields `failed`, and the app retries with a new `event_id` after an explicit user OK.
 - **Encryption at rest is not provided.** The SQLite file inherits OS permissions; the surrounding app owns the private store and any encryption.
 - **Single-threaded `Agent`.** Concurrency across sessions is left to the host; SQLite serializes writers.
-- **Real providers are wired but were not exercised live** during the build (see `build-record.md`).
+- **Real providers:** first live run (OpenAI `gpt-4o-mini`, both roles) on 2026-09-23 against `fixtures/personal_application`: 10 events, 5 paid calls, all confirmed with usage and cost, no uncertain calls (see `build-record.md`). Anthropic has not been exercised live.

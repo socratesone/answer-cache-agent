@@ -1,0 +1,6 @@
+{"query":"Why are you interested in this role?","context":{"role_family":["agent_engineering"],"sector":["education"]},"expect_intent":"motivation","expect_top":["T_motivation_ae_edu","T_motivation_ae_edu_alt"]}
+{"query":"Why do you want to work here?","context":{"role_family":["full_stack"]},"expect_intent":"motivation","expect_top":"T_motivation_fullstack"}
+{"query":"What draws you to this position?","context":{"role_family":["agent_engineering"]},"expect_intent":"motivation","expect_top":["T_motivation_ae_edu","T_motivation_ae_edu_alt"]}
+{"query":"Would you consider moving for this role?","context":{},"expect_intent":"relocation","expect_top":"T_relocate"}
+{"query":"Describe your strongest technical skill.","context":{"role_family":["full_stack"]},"expect_intent":"strengths","expect_top":"T_strength_fullstack"}
+{"query":"What is your greatest strength?","context":{"role_family":["agent_engineering"],"sector":["education"]},"expect_intent":"strengths","expect_top":"T_strength_eval"}

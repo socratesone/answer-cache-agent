@@ -1,0 +1,10 @@
+{"type":"prepare_form","expected_revision":null,"payload":{"questions":[{"id":"q1","text":"Why are you interested in this role?","constraints":{"max_length":600}},{"id":"q2","text":"Would you consider moving for this role?","constraints":{"max_words":60}},{"id":"q3","text":"Describe your strongest technical skill.","constraints":{"max_length":400}},{"id":"q4","text":"Regulatory audit history?","constraints":{"max_length":400}},{"id":"q5","text":"Full name","prefilled":true}],"page_url":"https://careers.brightpath.edu/apply/ml-agent-engineer","page_title":"ML Agent Engineer - BrightPath Learning","hints":[{"dimension":"role_family","value":"agent_engineering","source":"user"}],"rules":[{"id":"edu","match_field":"page_url","pattern":"\\.edu/","dimension":"sector","value":"education"}]}}
+{"type":"generate_initial","expected_revision":"$last","payload":{"target_question_ids":["q1"],"authorized_question_ids":["q2","q3","q4"],"limits":{"max_cost_usd":0.10}}}
+{"type":"record_feedback","expected_revision":"$last","payload":{"outcome":"shown","shown":["$cands.0.id","$cands.1.id"]}}
+{"type":"record_feedback","expected_revision":"$last","payload":{"outcome":"selected","candidate_id":"$cands.0.id"}}
+{"type":"get_candidate","expected_revision":"$last","payload":{"question_id":"q1","variant":"concise"}}
+{"type":"get_candidate","expected_revision":"$last","payload":{"question_id":"q3"}}
+{"type":"record_feedback","expected_revision":"$last","payload":{"outcome":"shown","shown":["$cands.0.id"],"alternatives":["$cands.1.id"]}}
+{"type":"record_feedback","expected_revision":"$last","payload":{"outcome":"rejected","candidate_id":"$cands.0.id","reasons":["wrong_emphasis"],"free_text":"lead with the evaluation harness work"}}
+{"type":"regenerate_question","expected_revision":"$last","payload":{"question_id":"q3"}}
+{"type":"record_feedback","expected_revision":"$last","payload":{"outcome":"approved","candidate_id":"$cands.0.id","approve_as_template_id":"T_strength_eval_v2"}}

@@ -1,0 +1,82 @@
+{
+  "$defs": {
+    "RequestLimits": {
+      "additionalProperties": false,
+      "properties": {
+        "max_cost_usd": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Cost Usd"
+        },
+        "max_questions": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Questions"
+        },
+        "max_tokens": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Tokens"
+        }
+      },
+      "title": "RequestLimits",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "authorized_question_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Authorized Question Ids",
+      "type": "array"
+    },
+    "limits": {
+      "$ref": "#/$defs/RequestLimits",
+      "default": {
+        "max_cost_usd": null,
+        "max_questions": null,
+        "max_tokens": null
+      }
+    },
+    "target_question_ids": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Target Question Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "target_question_ids"
+  ],
+  "title": "GenerateInitialPayload",
+  "type": "object"
+}

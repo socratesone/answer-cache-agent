@@ -1,0 +1,43 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "candidate_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Candidate Id"
+    },
+    "question_id": {
+      "title": "Question Id",
+      "type": "string"
+    },
+    "variant": {
+      "anyOf": [
+        {
+          "enum": [
+            "standard",
+            "concise",
+            "alternative"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Variant"
+    }
+  },
+  "required": [
+    "question_id"
+  ],
+  "title": "GetCandidatePayload",
+  "type": "object"
+}

@@ -1,0 +1,54 @@
+# All tunables live here. Structural invariants (2 initial variants, <=5 targeted
+# candidates, zero paid calls on prepare/get/feedback/update, filter-before-score,
+# generated-is-never-evidence, ledger-before-send) are in code and are not configurable.
+version: 1
+
+batch:
+  max_questions_per_batch: 10
+
+retrieval:
+  top_k: 8
+  min_similarity: 0.05  # below this a neighbour is not retrieved at all (KNN always returns k rows otherwise)
+  max_context_tokens_per_question: 1500
+  embedding_model: BAAI/bge-small-en-v1.5
+
+ranking:
+  policy_version: "1"
+  weights:
+    semantic: 0.40
+    context: 0.25
+    quality: 0.20
+    preference: 0.15
+  alpha: 1.0            # Beta prior successes
+  beta: 1.0             # Beta prior failures
+  min_n: 3              # observations needed before a context key is trusted
+  half_life_days: 90
+  edit_weight: 0.5      # an edit counts as this fraction of a selection
+  learning_enabled: true
+
+generation:
+  max_regen_rounds_before_feedback: 2
+  max_output_tokens_per_question: 600
+  max_output_tokens_per_call: 4000
+
+budget:
+  max_session_cost_usd: 0.50
+  max_session_tokens: 150000
+  max_paid_calls_per_operation: 12   # one call per question (write-through per question) + diagnosis
+  chars_per_token_estimate: 4
+
+# Cost guard only (PRD §11): USD per 1M tokens. Unknown model -> tokens-only guard + diagnostic.
+pricing:
+  gpt-4o-mini: {input: 0.15, output: 0.60}
+  gpt-4o: {input: 2.50, output: 10.00}
+  claude-sonnet-5: {input: 3.00, output: 15.00}
+  claude-haiku-4-5-20251001: {input: 1.00, output: 5.00}
+
+evaluator:
+  enabled: true
+
+retention:
+  unseen_candidate_days: 30
+  shown_candidate_days: 30
+  rejected_candidate_days: 30
+  invalid_candidate_days: 7

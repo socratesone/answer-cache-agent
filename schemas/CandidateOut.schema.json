@@ -1,0 +1,90 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "body": {
+      "description": "Symbolic template; {{variable_id}} placeholders unresolved.",
+      "title": "Body",
+      "type": "string"
+    },
+    "evidence_refs": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidence Refs",
+      "type": "array"
+    },
+    "form_revision": {
+      "title": "Form Revision",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "question_id": {
+      "title": "Question Id",
+      "type": "string"
+    },
+    "ranking": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ranking"
+    },
+    "self_report": {
+      "additionalProperties": true,
+      "default": {},
+      "description": "Generator self-assessment. Diagnostic only; not independent verification.",
+      "title": "Self Report",
+      "type": "object"
+    },
+    "status": {
+      "title": "Status",
+      "type": "string"
+    },
+    "template_refs": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Template Refs",
+      "type": "array"
+    },
+    "validation": {
+      "additionalProperties": true,
+      "default": {},
+      "title": "Validation",
+      "type": "object"
+    },
+    "variables": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Variables",
+      "type": "array"
+    },
+    "variant": {
+      "title": "Variant",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "question_id",
+    "variant",
+    "body",
+    "variables",
+    "evidence_refs",
+    "template_refs",
+    "status",
+    "form_revision"
+  ],
+  "title": "CandidateOut",
+  "type": "object"
+}

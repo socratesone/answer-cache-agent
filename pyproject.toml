@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "answer-cache-agent"
+version = "0.1.0"
+description = "LangGraph agent that produces grounded, context-aware answer templates for questionnaires."
+license = { text = "MIT" }
+requires-python = ">=3.10"
+dependencies = [
+  "langgraph>=0.3,<0.4",
+  "langgraph-checkpoint-sqlite>=2.0",
+  "langchain-core>=0.3",
+  "langchain-openai>=0.3",
+  "langchain-anthropic>=0.3",
+  "pydantic>=2.0",
+  "pyyaml>=6.0",
+  "sqlite-vec>=0.1.6",
+  "fastembed>=0.7",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+answer-cache-agent = "answer_cache_agent.harness:main"
+
+[tool.setuptools.packages.find]
+include = ["answer_cache_agent*"]
+
+[tool.setuptools.package-data]
+answer_cache_agent = ["config.yaml", "prompts/*.md"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["with_model: needs the real fastembed model download"]

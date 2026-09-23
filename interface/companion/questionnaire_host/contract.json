@@ -1,0 +1,1161 @@
+{
+  "protocol": 1,
+  "fingerprint": "a009bd503efd319bf047d19e054e3660a4a1e34b8b0fc2b9bdaee41a59504294",
+  "schemas": {
+    "CandidateOut": {
+      "additionalProperties": false,
+      "properties": {
+        "body": {
+          "description": "Symbolic template; {{variable_id}} placeholders unresolved.",
+          "title": "Body",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "form_revision": {
+          "title": "Form Revision",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "question_id": {
+          "title": "Question Id",
+          "type": "string"
+        },
+        "ranking": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ranking"
+        },
+        "self_report": {
+          "additionalProperties": true,
+          "default": {},
+          "description": "Generator self-assessment. Diagnostic only; not independent verification.",
+          "title": "Self Report",
+          "type": "object"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        },
+        "template_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Template Refs",
+          "type": "array"
+        },
+        "validation": {
+          "additionalProperties": true,
+          "default": {},
+          "title": "Validation",
+          "type": "object"
+        },
+        "variables": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Variables",
+          "type": "array"
+        },
+        "variant": {
+          "title": "Variant",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "question_id",
+        "variant",
+        "body",
+        "variables",
+        "evidence_refs",
+        "template_refs",
+        "status",
+        "form_revision"
+      ],
+      "title": "CandidateOut",
+      "type": "object"
+    },
+    "DiagnosisOutput": {
+      "additionalProperties": false,
+      "properties": {
+        "diagnosis": {
+          "title": "Diagnosis",
+          "type": "string"
+        },
+        "missing_information": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Missing Information",
+          "type": "array"
+        },
+        "question_id": {
+          "title": "Question Id",
+          "type": "string"
+        },
+        "strategy_changes": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Strategy Changes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "question_id",
+        "diagnosis"
+      ],
+      "title": "DiagnosisOutput",
+      "type": "object"
+    },
+    "Event": {
+      "additionalProperties": false,
+      "properties": {
+        "event_id": {
+          "title": "Event Id",
+          "type": "string"
+        },
+        "expected_revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Revision from the last result; None only for the first prepare_form.",
+          "title": "Expected Revision"
+        },
+        "payload": {
+          "additionalProperties": true,
+          "title": "Payload",
+          "type": "object"
+        },
+        "scope_id": {
+          "title": "Scope Id",
+          "type": "string"
+        },
+        "session_id": {
+          "title": "Session Id",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "prepare_form",
+            "generate_initial",
+            "get_candidate",
+            "regenerate_question",
+            "record_feedback",
+            "update_form"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "session_id",
+        "scope_id",
+        "type",
+        "payload"
+      ],
+      "title": "Event",
+      "type": "object"
+    },
+    "GenerateInitialPayload": {
+      "$defs": {
+        "RequestLimits": {
+          "additionalProperties": false,
+          "properties": {
+            "max_cost_usd": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Max Cost Usd"
+            },
+            "max_questions": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Max Questions"
+            },
+            "max_tokens": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Max Tokens"
+            }
+          },
+          "title": "RequestLimits",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "authorized_question_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Authorized Question Ids",
+          "type": "array"
+        },
+        "limits": {
+          "$ref": "#/$defs/RequestLimits",
+          "default": {
+            "max_cost_usd": null,
+            "max_questions": null,
+            "max_tokens": null
+          }
+        },
+        "target_question_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "title": "Target Question Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "target_question_ids"
+      ],
+      "title": "GenerateInitialPayload",
+      "type": "object"
+    },
+    "GenerationOutput": {
+      "$defs": {
+        "Abstention": {
+          "additionalProperties": false,
+          "properties": {
+            "needed": {
+              "title": "Needed",
+              "type": "string"
+            },
+            "question_id": {
+              "title": "Question Id",
+              "type": "string"
+            },
+            "reason": {
+              "enum": [
+                "insufficient_evidence",
+                "hidden_value_reasoning",
+                "conflicting_evidence",
+                "out_of_scope"
+              ],
+              "title": "Reason",
+              "type": "string"
+            }
+          },
+          "required": [
+            "question_id",
+            "reason",
+            "needed"
+          ],
+          "title": "Abstention",
+          "type": "object"
+        },
+        "GeneratedItem": {
+          "additionalProperties": false,
+          "properties": {
+            "body": {
+              "title": "Body",
+              "type": "string"
+            },
+            "evidence_refs": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Evidence Refs",
+              "type": "array"
+            },
+            "question_id": {
+              "title": "Question Id",
+              "type": "string"
+            },
+            "self_report": {
+              "$ref": "#/$defs/SelfReport"
+            },
+            "template_refs": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Template Refs",
+              "type": "array"
+            },
+            "variables": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Variables",
+              "type": "array"
+            },
+            "variant": {
+              "enum": [
+                "standard",
+                "concise",
+                "alternative"
+              ],
+              "title": "Variant",
+              "type": "string"
+            }
+          },
+          "required": [
+            "question_id",
+            "variant",
+            "body",
+            "self_report"
+          ],
+          "title": "GeneratedItem",
+          "type": "object"
+        },
+        "SelfReport": {
+          "additionalProperties": false,
+          "properties": {
+            "confidence": {
+              "maximum": 1,
+              "minimum": 0,
+              "title": "Confidence",
+              "type": "number"
+            },
+            "dropped_qualifications": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Dropped Qualifications",
+              "type": "array"
+            },
+            "unsupported_claims": {
+              "default": [],
+              "items": {
+                "type": "string"
+              },
+              "title": "Unsupported Claims",
+              "type": "array"
+            }
+          },
+          "required": [
+            "confidence"
+          ],
+          "title": "SelfReport",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "abstentions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Abstention"
+          },
+          "title": "Abstentions",
+          "type": "array"
+        },
+        "items": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/GeneratedItem"
+          },
+          "title": "Items",
+          "type": "array"
+        }
+      },
+      "title": "GenerationOutput",
+      "type": "object"
+    },
+    "GetCandidatePayload": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Candidate Id"
+        },
+        "question_id": {
+          "title": "Question Id",
+          "type": "string"
+        },
+        "variant": {
+          "anyOf": [
+            {
+              "enum": [
+                "standard",
+                "concise",
+                "alternative"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Variant"
+        }
+      },
+      "required": [
+        "question_id"
+      ],
+      "title": "GetCandidatePayload",
+      "type": "object"
+    },
+    "PrepareFormPayload": {
+      "$defs": {
+        "Constraints": {
+          "additionalProperties": false,
+          "properties": {
+            "max_length": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Max Length"
+            },
+            "max_words": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Max Words"
+            },
+            "required": {
+              "default": false,
+              "title": "Required",
+              "type": "boolean"
+            }
+          },
+          "title": "Constraints",
+          "type": "object"
+        },
+        "Hint": {
+          "additionalProperties": false,
+          "properties": {
+            "dimension": {
+              "title": "Dimension",
+              "type": "string"
+            },
+            "source": {
+              "default": "caller",
+              "enum": [
+                "caller",
+                "rule",
+                "user"
+              ],
+              "title": "Source",
+              "type": "string"
+            },
+            "value": {
+              "title": "Value",
+              "type": "string"
+            }
+          },
+          "required": [
+            "dimension",
+            "value"
+          ],
+          "title": "Hint",
+          "type": "object"
+        },
+        "HintRule": {
+          "additionalProperties": false,
+          "description": "User-maintained deterministic rule: regex over a page field assigns a value (Q2).",
+          "properties": {
+            "dimension": {
+              "title": "Dimension",
+              "type": "string"
+            },
+            "id": {
+              "title": "Id",
+              "type": "string"
+            },
+            "match_field": {
+              "enum": [
+                "page_url",
+                "page_title",
+                "question_text"
+              ],
+              "title": "Match Field",
+              "type": "string"
+            },
+            "pattern": {
+              "title": "Pattern",
+              "type": "string"
+            },
+            "value": {
+              "title": "Value",
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "match_field",
+            "pattern",
+            "dimension",
+            "value"
+          ],
+          "title": "HintRule",
+          "type": "object"
+        },
+        "Question": {
+          "additionalProperties": false,
+          "properties": {
+            "constraints": {
+              "$ref": "#/$defs/Constraints",
+              "default": {
+                "max_length": null,
+                "max_words": null,
+                "required": false
+              }
+            },
+            "hints": {
+              "default": [],
+              "items": {
+                "$ref": "#/$defs/Hint"
+              },
+              "title": "Hints",
+              "type": "array"
+            },
+            "id": {
+              "title": "Id",
+              "type": "string"
+            },
+            "prefilled": {
+              "default": false,
+              "title": "Prefilled",
+              "type": "boolean"
+            },
+            "prefilled_template_ref": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Prefilled Template Ref"
+            },
+            "text": {
+              "title": "Text",
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "text"
+          ],
+          "title": "Question",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "hints": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Hint"
+          },
+          "title": "Hints",
+          "type": "array"
+        },
+        "page_context": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Sanitized, disclosure-approved page text only.",
+          "title": "Page Context"
+        },
+        "page_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page Title"
+        },
+        "page_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page Url"
+        },
+        "questions": {
+          "items": {
+            "$ref": "#/$defs/Question"
+          },
+          "title": "Questions",
+          "type": "array"
+        },
+        "rules": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/HintRule"
+          },
+          "title": "Rules",
+          "type": "array"
+        }
+      },
+      "required": [
+        "questions"
+      ],
+      "title": "PrepareFormPayload",
+      "type": "object"
+    },
+    "RecordFeedbackPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "alternatives": {
+          "default": [],
+          "description": "Other candidate ids available but not displayed.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Alternatives",
+          "type": "array"
+        },
+        "approve_as_template_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "For outcome=approved: promote into the reusable template collection under this id.",
+          "title": "Approve As Template Id"
+        },
+        "candidate_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Candidate Id"
+        },
+        "edited_body": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Edited Body"
+        },
+        "free_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Free Text"
+        },
+        "outcome": {
+          "enum": [
+            "shown",
+            "selected",
+            "rejected",
+            "edited",
+            "approved"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "reasons": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Reasons",
+          "type": "array"
+        },
+        "shown": {
+          "default": [],
+          "description": "Candidate ids actually displayed, in display order (for outcome=shown).",
+          "items": {
+            "type": "string"
+          },
+          "title": "Shown",
+          "type": "array"
+        }
+      },
+      "required": [
+        "outcome"
+      ],
+      "title": "RecordFeedbackPayload",
+      "type": "object"
+    },
+    "RegenerateQuestionPayload": {
+      "$defs": {
+        "Rejection": {
+          "additionalProperties": false,
+          "properties": {
+            "candidate_id": {
+              "title": "Candidate Id",
+              "type": "string"
+            },
+            "free_text": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Free Text"
+            },
+            "reasons": {
+              "default": [],
+              "description": "Application-defined codes; the agent stores and forwards them, never interprets a fixed vocabulary.",
+              "items": {
+                "type": "string"
+              },
+              "title": "Reasons",
+              "type": "array"
+            }
+          },
+          "required": [
+            "candidate_id"
+          ],
+          "title": "Rejection",
+          "type": "object"
+        },
+        "RequestLimits": {
+          "additionalProperties": false,
+          "properties": {
+            "max_cost_usd": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Max Cost Usd"
+            },
+            "max_questions": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Max Questions"
+            },
+            "max_tokens": {
+              "anyOf": [
+                {
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Max Tokens"
+            }
+          },
+          "title": "RequestLimits",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "limits": {
+          "$ref": "#/$defs/RequestLimits",
+          "default": {
+            "max_cost_usd": null,
+            "max_questions": null,
+            "max_tokens": null
+          }
+        },
+        "question_id": {
+          "title": "Question Id",
+          "type": "string"
+        },
+        "rejected": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Rejection"
+          },
+          "title": "Rejected",
+          "type": "array"
+        }
+      },
+      "required": [
+        "question_id"
+      ],
+      "title": "RegenerateQuestionPayload",
+      "type": "object"
+    },
+    "Result": {
+      "$defs": {
+        "CandidateOut": {
+          "additionalProperties": false,
+          "properties": {
+            "body": {
+              "description": "Symbolic template; {{variable_id}} placeholders unresolved.",
+              "title": "Body",
+              "type": "string"
+            },
+            "evidence_refs": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Evidence Refs",
+              "type": "array"
+            },
+            "form_revision": {
+              "title": "Form Revision",
+              "type": "string"
+            },
+            "id": {
+              "title": "Id",
+              "type": "string"
+            },
+            "question_id": {
+              "title": "Question Id",
+              "type": "string"
+            },
+            "ranking": {
+              "anyOf": [
+                {
+                  "additionalProperties": true,
+                  "type": "object"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Ranking"
+            },
+            "self_report": {
+              "additionalProperties": true,
+              "default": {},
+              "description": "Generator self-assessment. Diagnostic only; not independent verification.",
+              "title": "Self Report",
+              "type": "object"
+            },
+            "status": {
+              "title": "Status",
+              "type": "string"
+            },
+            "template_refs": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Template Refs",
+              "type": "array"
+            },
+            "validation": {
+              "additionalProperties": true,
+              "default": {},
+              "title": "Validation",
+              "type": "object"
+            },
+            "variables": {
+              "items": {
+                "type": "string"
+              },
+              "title": "Variables",
+              "type": "array"
+            },
+            "variant": {
+              "title": "Variant",
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "question_id",
+            "variant",
+            "body",
+            "variables",
+            "evidence_refs",
+            "template_refs",
+            "status",
+            "form_revision"
+          ],
+          "title": "CandidateOut",
+          "type": "object"
+        },
+        "Unresolved": {
+          "additionalProperties": false,
+          "properties": {
+            "needed": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Needed"
+            },
+            "question_id": {
+              "title": "Question Id",
+              "type": "string"
+            },
+            "reason": {
+              "enum": [
+                "insufficient_evidence",
+                "hidden_value_reasoning",
+                "conflicting_evidence",
+                "out_of_scope",
+                "budget_exhausted",
+                "provider_failed",
+                "set_exhausted"
+              ],
+              "title": "Reason",
+              "type": "string"
+            }
+          },
+          "required": [
+            "question_id",
+            "reason"
+          ],
+          "title": "Unresolved",
+          "type": "object"
+        },
+        "Usage": {
+          "additionalProperties": false,
+          "properties": {
+            "calls": {
+              "default": 0,
+              "title": "Calls",
+              "type": "integer"
+            },
+            "cost_usd": {
+              "default": 0,
+              "title": "Cost Usd",
+              "type": "number"
+            },
+            "tokens": {
+              "default": 0,
+              "title": "Tokens",
+              "type": "integer"
+            },
+            "uncertain": {
+              "default": 0,
+              "title": "Uncertain",
+              "type": "integer"
+            }
+          },
+          "title": "Usage",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "cached": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "default": {},
+          "description": "question_id -> ids of other valid cached candidates.",
+          "title": "Cached",
+          "type": "object"
+        },
+        "candidates": {
+          "default": [],
+          "description": "Candidates returned for immediate use.",
+          "items": {
+            "$ref": "#/$defs/CandidateOut"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "diagnostics": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Diagnostics",
+          "type": "array"
+        },
+        "event_id": {
+          "title": "Event Id",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "next_action": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Next Action"
+        },
+        "revision": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Revision"
+        },
+        "status": {
+          "enum": [
+            "ready",
+            "partial",
+            "needs_information",
+            "needs_feedback",
+            "budget_exhausted",
+            "stale_context",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "unresolved": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Unresolved"
+          },
+          "title": "Unresolved",
+          "type": "array"
+        },
+        "usage": {
+          "$ref": "#/$defs/Usage",
+          "default": {
+            "calls": 0,
+            "cost_usd": 0,
+            "tokens": 0,
+            "uncertain": 0
+          }
+        }
+      },
+      "required": [
+        "event_id",
+        "status",
+        "revision"
+      ],
+      "title": "Result",
+      "type": "object"
+    }
+  }
+}

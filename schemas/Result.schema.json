@@ -1,0 +1,265 @@
+{
+  "$defs": {
+    "CandidateOut": {
+      "additionalProperties": false,
+      "properties": {
+        "body": {
+          "description": "Symbolic template; {{variable_id}} placeholders unresolved.",
+          "title": "Body",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "form_revision": {
+          "title": "Form Revision",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "question_id": {
+          "title": "Question Id",
+          "type": "string"
+        },
+        "ranking": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ranking"
+        },
+        "self_report": {
+          "additionalProperties": true,
+          "default": {},
+          "description": "Generator self-assessment. Diagnostic only; not independent verification.",
+          "title": "Self Report",
+          "type": "object"
+        },
+        "status": {
+          "title": "Status",
+          "type": "string"
+        },
+        "template_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Template Refs",
+          "type": "array"
+        },
+        "validation": {
+          "additionalProperties": true,
+          "default": {},
+          "title": "Validation",
+          "type": "object"
+        },
+        "variables": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Variables",
+          "type": "array"
+        },
+        "variant": {
+          "title": "Variant",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "question_id",
+        "variant",
+        "body",
+        "variables",
+        "evidence_refs",
+        "template_refs",
+        "status",
+        "form_revision"
+      ],
+      "title": "CandidateOut",
+      "type": "object"
+    },
+    "Unresolved": {
+      "additionalProperties": false,
+      "properties": {
+        "needed": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Needed"
+        },
+        "question_id": {
+          "title": "Question Id",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "insufficient_evidence",
+            "hidden_value_reasoning",
+            "conflicting_evidence",
+            "out_of_scope",
+            "budget_exhausted",
+            "provider_failed",
+            "set_exhausted"
+          ],
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_id",
+        "reason"
+      ],
+      "title": "Unresolved",
+      "type": "object"
+    },
+    "Usage": {
+      "additionalProperties": false,
+      "properties": {
+        "calls": {
+          "default": 0,
+          "title": "Calls",
+          "type": "integer"
+        },
+        "cost_usd": {
+          "default": 0.0,
+          "title": "Cost Usd",
+          "type": "number"
+        },
+        "tokens": {
+          "default": 0,
+          "title": "Tokens",
+          "type": "integer"
+        },
+        "uncertain": {
+          "default": 0,
+          "title": "Uncertain",
+          "type": "integer"
+        }
+      },
+      "title": "Usage",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "cached": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "default": {},
+      "description": "question_id -> ids of other valid cached candidates.",
+      "title": "Cached",
+      "type": "object"
+    },
+    "candidates": {
+      "default": [],
+      "description": "Candidates returned for immediate use.",
+      "items": {
+        "$ref": "#/$defs/CandidateOut"
+      },
+      "title": "Candidates",
+      "type": "array"
+    },
+    "diagnostics": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Diagnostics",
+      "type": "array"
+    },
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "evidence_refs": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Evidence Refs",
+      "type": "array"
+    },
+    "next_action": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Next Action"
+    },
+    "revision": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Revision"
+    },
+    "status": {
+      "enum": [
+        "ready",
+        "partial",
+        "needs_information",
+        "needs_feedback",
+        "budget_exhausted",
+        "stale_context",
+        "failed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "unresolved": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Unresolved"
+      },
+      "title": "Unresolved",
+      "type": "array"
+    },
+    "usage": {
+      "$ref": "#/$defs/Usage",
+      "default": {
+        "calls": 0,
+        "cost_usd": 0.0,
+        "tokens": 0,
+        "uncertain": 0
+      }
+    }
+  },
+  "required": [
+    "event_id",
+    "status",
+    "revision"
+  ],
+  "title": "Result",
+  "type": "object"
+}

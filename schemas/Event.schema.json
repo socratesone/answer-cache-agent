@@ -1,0 +1,56 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "expected_revision": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Revision from the last result; None only for the first prepare_form.",
+      "title": "Expected Revision"
+    },
+    "payload": {
+      "additionalProperties": true,
+      "title": "Payload",
+      "type": "object"
+    },
+    "scope_id": {
+      "title": "Scope Id",
+      "type": "string"
+    },
+    "session_id": {
+      "title": "Session Id",
+      "type": "string"
+    },
+    "type": {
+      "enum": [
+        "prepare_form",
+        "generate_initial",
+        "get_candidate",
+        "regenerate_question",
+        "record_feedback",
+        "update_form"
+      ],
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "session_id",
+    "scope_id",
+    "type",
+    "payload"
+  ],
+  "title": "Event",
+  "type": "object"
+}

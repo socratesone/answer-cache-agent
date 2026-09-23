@@ -1,0 +1,6 @@
+{"query":"Is customer data encrypted at rest and in transit?","context":{"customer_tier":["enterprise"],"region":["eu"]},"expect_intent":"encryption","expect_top":"T_encryption"}
+{"query":"How quickly are customers notified of a security incident?","context":{"customer_tier":["enterprise"]},"expect_intent":"incident_response","expect_top":"T_incident_enterprise"}
+{"query":"How quickly are customers notified of a security incident?","context":{"customer_tier":["smb"]},"expect_intent":"incident_response","expect_top":"T_incident_smb"}
+{"query":"List your subprocessors and processing locations.","context":{"region":["eu"]},"expect_intent":"subprocessors","expect_top":"T_subprocessors_eu"}
+{"query":"What are your recovery objectives?","context":{},"expect_intent":"disaster_recovery","expect_top":"T_dr"}
+{"query":"Do you hold any security certifications or attestations?","context":{"customer_tier":["smb"]},"expect_intent":"certifications","expect_top":"T_soc2"}

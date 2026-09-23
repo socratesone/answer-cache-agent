@@ -1,0 +1,8 @@
+__pycache__/
+*.egg-info/
+.pytest_cache/
+*.db
+*.db-wal
+*.db-shm
+.npm-cache/
+WHERE_I_LEFT_OFF.md

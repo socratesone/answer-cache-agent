@@ -1,0 +1,96 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "alternatives": {
+      "default": [],
+      "description": "Other candidate ids available but not displayed.",
+      "items": {
+        "type": "string"
+      },
+      "title": "Alternatives",
+      "type": "array"
+    },
+    "approve_as_template_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "For outcome=approved: promote into the reusable template collection under this id.",
+      "title": "Approve As Template Id"
+    },
+    "candidate_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Candidate Id"
+    },
+    "edited_body": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Edited Body"
+    },
+    "free_text": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Free Text"
+    },
+    "outcome": {
+      "enum": [
+        "shown",
+        "selected",
+        "rejected",
+        "edited",
+        "approved"
+      ],
+      "title": "Outcome",
+      "type": "string"
+    },
+    "reasons": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Reasons",
+      "type": "array"
+    },
+    "shown": {
+      "default": [],
+      "description": "Candidate ids actually displayed, in display order (for outcome=shown).",
+      "items": {
+        "type": "string"
+      },
+      "title": "Shown",
+      "type": "array"
+    }
+  },
+  "required": [
+    "outcome"
+  ],
+  "title": "RecordFeedbackPayload",
+  "type": "object"
+}

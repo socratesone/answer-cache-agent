@@ -1,0 +1,144 @@
+{
+  "$defs": {
+    "Abstention": {
+      "additionalProperties": false,
+      "properties": {
+        "needed": {
+          "title": "Needed",
+          "type": "string"
+        },
+        "question_id": {
+          "title": "Question Id",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "insufficient_evidence",
+            "hidden_value_reasoning",
+            "conflicting_evidence",
+            "out_of_scope"
+          ],
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_id",
+        "reason",
+        "needed"
+      ],
+      "title": "Abstention",
+      "type": "object"
+    },
+    "GeneratedItem": {
+      "additionalProperties": false,
+      "properties": {
+        "body": {
+          "title": "Body",
+          "type": "string"
+        },
+        "evidence_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Refs",
+          "type": "array"
+        },
+        "question_id": {
+          "title": "Question Id",
+          "type": "string"
+        },
+        "self_report": {
+          "$ref": "#/$defs/SelfReport"
+        },
+        "template_refs": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Template Refs",
+          "type": "array"
+        },
+        "variables": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Variables",
+          "type": "array"
+        },
+        "variant": {
+          "enum": [
+            "standard",
+            "concise",
+            "alternative"
+          ],
+          "title": "Variant",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_id",
+        "variant",
+        "body",
+        "self_report"
+      ],
+      "title": "GeneratedItem",
+      "type": "object"
+    },
+    "SelfReport": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "maximum": 1,
+          "minimum": 0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "dropped_qualifications": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Dropped Qualifications",
+          "type": "array"
+        },
+        "unsupported_claims": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Unsupported Claims",
+          "type": "array"
+        }
+      },
+      "required": [
+        "confidence"
+      ],
+      "title": "SelfReport",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "abstentions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Abstention"
+      },
+      "title": "Abstentions",
+      "type": "array"
+    },
+    "items": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/GeneratedItem"
+      },
+      "title": "Items",
+      "type": "array"
+    }
+  },
+  "title": "GenerationOutput",
+  "type": "object"
+}

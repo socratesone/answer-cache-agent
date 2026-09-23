@@ -2,6 +2,8 @@
 
 > Stop answering the same questions from scratch.
 
+> **Experimental.** This is a product of [The Agent Foundry Lab](https://github.com/socratesone), built by SocratesOne Development LLC. It is largely untested outside its own offline test suite and a single live provider run; expect rough edges, breaking changes, and gaps (see the [engine gap list](interface/docs/engine-gaps.md)). Do not rely on it for anything you cannot afford to redo by hand.
+
 A LangGraph agent that turns a questionnaire's questions plus your own approved material into grounded answer *templates* — symbolic text with `{{variable}}` placeholders — ranks them by context, learns from what you pick, and keeps private values and provider keys out of every model request. Local-first: one SQLite file (data, vector index, checkpoints), local ONNX embeddings, your own OpenAI/Anthropic key.
 
 ## Repository layout

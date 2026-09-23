@@ -200,17 +200,17 @@ class Repository:
     # -- feedback (lane 2) -----------------------------------------------------------
     def record_exposure(self, event_id: str, shown: list[str], alternatives: list[str], context: dict) -> None:
         for i, cid in enumerate(shown):
-            self.conn.execute("INSERT OR IGNORE INTO exposure VALUES (?,?,?,?,?,?)",
-                              (event_id, cid, i, json.dumps(alternatives), json.dumps(context, sort_keys=True), _now()))
+            self.conn.execute("INSERT OR IGNORE INTO exposure VALUES (?,?,?,?,?,?,?)",
+                              (self.scope, event_id, cid, i, json.dumps(alternatives), json.dumps(context, sort_keys=True), _now()))
 
     def record_feedback(self, event_id: str, candidate_id: str, outcome: str, reasons: list[str], free_text: str | None,
                         form_values: set[str], cfg: RankingConfig) -> bool:
         """Exactly-once: returns False if this event_id was already applied. Updates stats along the back-off ladder."""
         with self.transaction():
-            if self.conn.execute("SELECT 1 FROM feedback WHERE event_id=?", (event_id,)).fetchone():
+            if self.conn.execute("SELECT 1 FROM feedback WHERE scope_id=? AND event_id=?", (self.scope, event_id)).fetchone():
                 return False
-            self.conn.execute("INSERT INTO feedback VALUES (?,?,?,?,?,?,?,?)",
-                              (event_id, candidate_id, outcome, json.dumps(reasons), free_text,
+            self.conn.execute("INSERT INTO feedback VALUES (?,?,?,?,?,?,?,?,?)",
+                              (self.scope, event_id, candidate_id, outcome, json.dumps(reasons), free_text,
                                json.dumps(sorted(form_values)), cfg.policy_version, _now()))
             if cfg.learning_enabled:
                 subject = self._stats_subject(candidate_id)
@@ -234,17 +234,17 @@ class Repository:
 
     # -- events and ledger (Q7) ---------------------------------------------------------
     def event_result(self, event_id: str) -> dict | None:
-        r = self.conn.execute("SELECT result_json FROM event WHERE event_id=?", (event_id,)).fetchone()
+        r = self.conn.execute("SELECT result_json FROM event WHERE scope_id=? AND event_id=?", (self.scope, event_id)).fetchone()
         return None if r is None else json.loads(r[0])
 
     def record_event(self, event_id: str, session_id: str, type: str, result: dict) -> None:
-        self.conn.execute("INSERT OR IGNORE INTO event VALUES (?,?,?,?,?)",
-                          (event_id, session_id, type, json.dumps(result, sort_keys=True), _now()))
+        self.conn.execute("INSERT OR IGNORE INTO event VALUES (?,?,?,?,?,?)",
+                          (self.scope, event_id, session_id, type, json.dumps(result, sort_keys=True), _now()))
 
     def reserve_call(self, call_id: str, event_id: str, session_id: str, role: str, model_id: str, est_in: int, est_out: int) -> None:
         now = _now()
-        self.conn.execute("INSERT OR IGNORE INTO usage_ledger VALUES (?,?,?,?,?,'reserved',?,?,NULL,NULL,NULL,?,?)",
-                          (call_id, event_id, session_id, role, model_id, est_in, est_out, now, now))
+        self.conn.execute("INSERT OR IGNORE INTO usage_ledger VALUES (?,?,?,?,?,?,'reserved',?,?,NULL,NULL,NULL,?,?)",
+                          (call_id, self.scope, event_id, session_id, role, model_id, est_in, est_out, now, now))
 
     def confirm_call(self, call_id: str, actual_in: int, actual_out: int, cost_usd: float | None) -> None:
         self.conn.execute("UPDATE usage_ledger SET state='confirmed', actual_in=?, actual_out=?, cost_usd=?, updated_at=? WHERE call_id=?",
@@ -259,8 +259,9 @@ class Repository:
             "SELECT COUNT(*) AS calls,"
             " SUM(CASE WHEN state='confirmed' THEN actual_in+actual_out ELSE est_in+est_out END) AS tokens,"
             " SUM(COALESCE(cost_usd,0)) AS cost_usd,"
-            " SUM(state='uncertain') AS uncertain FROM usage_ledger WHERE session_id=?", (session_id,)).fetchone()
+            " SUM(state='uncertain') AS uncertain FROM usage_ledger WHERE scope_id=? AND session_id=?", (self.scope, session_id)).fetchone()
         return {"calls": r["calls"] or 0, "tokens": r["tokens"] or 0, "cost_usd": r["cost_usd"] or 0.0, "uncertain": r["uncertain"] or 0}
 
     def uncertain_calls(self, event_id: str) -> list[str]:
-        return [r[0] for r in self.conn.execute("SELECT call_id FROM usage_ledger WHERE event_id=? AND state='uncertain'", (event_id,))]
+        return [r[0] for r in self.conn.execute(
+            "SELECT call_id FROM usage_ledger WHERE scope_id=? AND event_id=? AND state='uncertain'", (self.scope, event_id))]

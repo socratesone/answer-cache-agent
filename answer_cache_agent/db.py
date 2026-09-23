@@ -63,8 +63,9 @@ CREATE TABLE IF NOT EXISTS intent_alias (
 
 -- Session state: bounded working context + refs (PRD §6). Bindings/credentials never here.
 CREATE TABLE IF NOT EXISTS form_session (
-  id TEXT PRIMARY KEY, scope_id TEXT NOT NULL, revision TEXT NOT NULL,
-  state_json TEXT NOT NULL, updated_at TEXT NOT NULL);
+  id TEXT NOT NULL, scope_id TEXT NOT NULL, revision TEXT NOT NULL,
+  state_json TEXT NOT NULL, updated_at TEXT NOT NULL,
+  PRIMARY KEY (scope_id, id));
 
 CREATE TABLE IF NOT EXISTS candidate (
   id TEXT PRIMARY KEY, scope_id TEXT NOT NULL, session_id TEXT NOT NULL, question_id TEXT NOT NULL,
@@ -78,26 +79,29 @@ CREATE INDEX IF NOT EXISTS candidate_session_q ON candidate(session_id, question
 
 -- Q8 lane 2: feedback/preference evidence.
 CREATE TABLE IF NOT EXISTS exposure (
-  event_id TEXT NOT NULL, candidate_id TEXT NOT NULL, display_order INTEGER NOT NULL,
+  scope_id TEXT NOT NULL, event_id TEXT NOT NULL, candidate_id TEXT NOT NULL, display_order INTEGER NOT NULL,
   alternatives_json TEXT NOT NULL, context_json TEXT NOT NULL, created_at TEXT NOT NULL,
-  PRIMARY KEY (event_id, candidate_id));
+  PRIMARY KEY (scope_id, event_id, candidate_id));
 CREATE TABLE IF NOT EXISTS feedback (
-  event_id TEXT PRIMARY KEY, candidate_id TEXT NOT NULL,
+  scope_id TEXT NOT NULL, event_id TEXT NOT NULL, candidate_id TEXT NOT NULL,
   outcome TEXT NOT NULL CHECK (outcome IN ('selected','rejected','edited','approved')),
   reasons_json TEXT NOT NULL, free_text TEXT NULL, context_json TEXT NOT NULL,
-  policy_version TEXT NOT NULL, applied_at TEXT NOT NULL);
+  policy_version TEXT NOT NULL, applied_at TEXT NOT NULL,
+  PRIMARY KEY (scope_id, event_id));
 CREATE TABLE IF NOT EXISTS pref_stats (
   scope_id TEXT NOT NULL, subject_id TEXT NOT NULL, context_key TEXT NOT NULL,
   sel REAL NOT NULL DEFAULT 0, rej REAL NOT NULL DEFAULT 0, edit REAL NOT NULL DEFAULT 0,
   shown REAL NOT NULL DEFAULT 0, updated_at TEXT NOT NULL,
   PRIMARY KEY (scope_id, subject_id, context_key));
 
--- Q7: exactly-once events and the paid-call ledger.
+-- Q7: exactly-once events and the paid-call ledger. Event/session ids are client-chosen, so they
+-- are only unique within a scope.
 CREATE TABLE IF NOT EXISTS event (
-  event_id TEXT PRIMARY KEY, session_id TEXT NOT NULL, type TEXT NOT NULL,
-  result_json TEXT NOT NULL, applied_at TEXT NOT NULL);
+  scope_id TEXT NOT NULL, event_id TEXT NOT NULL, session_id TEXT NOT NULL, type TEXT NOT NULL,
+  result_json TEXT NOT NULL, applied_at TEXT NOT NULL,
+  PRIMARY KEY (scope_id, event_id));
 CREATE TABLE IF NOT EXISTS usage_ledger (
-  call_id TEXT PRIMARY KEY, event_id TEXT NOT NULL, session_id TEXT NOT NULL,
+  call_id TEXT PRIMARY KEY, scope_id TEXT NOT NULL, event_id TEXT NOT NULL, session_id TEXT NOT NULL,
   role TEXT NOT NULL, model_id TEXT NOT NULL,
   state TEXT NOT NULL CHECK (state IN ('reserved','confirmed','uncertain')),
   est_in INTEGER NOT NULL, est_out INTEGER NOT NULL,
@@ -119,13 +123,19 @@ def connect(path: str | Path) -> sqlite3.Connection:
     return conn
 
 
+SCHEMA_VERSION = "2"  # 2: events, sessions, feedback, exposure and ledger keyed by scope_id
+
+
 def init_schema(conn: sqlite3.Connection, embedding_model: str, dim: int) -> None:
-    """Create tables; refuse to mix embedding spaces (index maintenance rule, PRD §7)."""
+    """Create tables; refuse to mix embedding spaces (index maintenance rule, PRD §7) or schema versions."""
     conn.executescript(SCHEMA)
     SqliteVecStore.create_table(conn, dim)
-    row = conn.execute("SELECT value FROM meta WHERE key='embedding'").fetchone()
+    meta = dict(conn.execute("SELECT key, value FROM meta").fetchall())
     stamp = f"{embedding_model}:{dim}"
-    if row is None:
-        conn.execute("INSERT INTO meta(key, value) VALUES ('embedding', ?)", (stamp,))
-    elif row[0] != stamp:
-        raise RuntimeError(f"index built with {row[0]}, configured {stamp}: reindex required")
+    if "embedding" not in meta:
+        conn.execute("INSERT INTO meta(key, value) VALUES ('embedding', ?), ('schema', ?)", (stamp, SCHEMA_VERSION))
+    elif meta["embedding"] != stamp:
+        raise RuntimeError(f"index built with {meta['embedding']}, configured {stamp}: reindex required")
+    elif meta.get("schema") != SCHEMA_VERSION:
+        # ponytail: no in-place migration; v0.1 databases are rebuilt from JSONL, not upgraded.
+        raise RuntimeError(f"database schema {meta.get('schema', '1')} != {SCHEMA_VERSION}: recreate the database")

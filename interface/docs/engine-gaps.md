@@ -1,6 +1,6 @@
-# Interface → Fable integration handoff
+# Engine gaps, as seen from the interface
 
-Ownership: all interface work is under `interface/`. Engine, root files, schemas, scripts, fixtures and existing docs are read-only. Baseline: CODEX.md, engine 0.1. No engine contract changes are made by this application.
+What the interface can do against the engine 0.1 contract (`docs/interface-contract.md`), and which engine services are still missing. The interface makes no engine contract changes of its own; each "remaining gap" row is a candidate engine work item.
 
 | PRD action | Existing contract | Remaining gap / user impact | Acceptance required from engine |
 |---|---|---|---|
@@ -22,7 +22,7 @@ Ownership: all interface work is under `interface/`. Engine, root files, schemas
 | Spending | Result.usage + budget config | Missing per-call cost-known flag; cost_usd can conceal null costs | Unknown cost distinguishable from known zero; estimates labeled |
 | Stop / progress | Bounded handle_event only | Host cancels queued work and suppresses insertion, cannot interrupt active generation | Cooperative cancellation between paid calls and operation status reconciliation |
 | Change bindings/config/templates | Runtime deps and repository writes | No public affected-cache invalidation service | Cached validity reflects dependency changes, not just form revision |
-| Installer / browser transport | Assigned to interface by CODEX.md | Windows release validation required | No engine changes requested |
+| Installer / browser transport | Interface-owned (`docs/interface-contract.md` §6) | Windows release validation required | No engine changes requested |
 
 Release blockers: authoritative exact-match autofill, complete management, safe invalidation and portability are not represented as finished. UI uses explicit unavailable states. Native Windows installation, signing, store approval, live providers and publication require independent evidence.
 

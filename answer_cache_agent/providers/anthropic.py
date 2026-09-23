@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from answer_cache_agent.providers.base import ProviderResult, message_text, parse_json
+from answer_cache_agent.providers.base import REQUEST_TIMEOUT_S, ProviderResult, message_text, parse_json
 
 
 class AnthropicAdapter:
@@ -12,7 +12,9 @@ class AnthropicAdapter:
         from langchain_anthropic import ChatAnthropic
 
         self.model_id = model_id
-        self._factory = lambda max_tokens: ChatAnthropic(model=model_id, api_key=api_key, max_tokens=max_tokens, temperature=0, max_retries=0)
+        # No sampling params: current Claude models reject temperature/top_p/top_k with a 400.
+        self._factory = lambda max_tokens: ChatAnthropic(model=model_id, api_key=api_key, max_tokens=max_tokens, max_retries=0,
+                                                         timeout=REQUEST_TIMEOUT_S)
 
     def complete_json(self, system: str, user: str, schema: dict, max_output_tokens: int) -> ProviderResult:
         system_full = f"{system}\n\nRespond with a single JSON object matching this JSON Schema and nothing else:\n{json.dumps(schema)}"

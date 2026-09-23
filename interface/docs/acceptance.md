@@ -13,4 +13,4 @@
 | Chrome internal pages | Unsupported message | Explicit URL gate |
 | Extension practice page | Local reuse with direct insertion helper | Full roundtrip needs installed companion |
 
-Engine gaps are listed in `fable-handoff.md`. Native Windows install/upgrade/uninstall, actual Chrome native-host linkage, live providers, signing and store approval remain separate gates. These tests do not certify Fable's entire in-progress engine checkout.
+Engine gaps are listed in `engine-gaps.md`. Native Windows install/upgrade/uninstall, actual Chrome native-host linkage, live providers, signing and store approval remain separate gates.

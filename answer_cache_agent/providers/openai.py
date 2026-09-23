@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from answer_cache_agent.providers.base import ProviderResult, message_text, parse_json
+from answer_cache_agent.providers.base import REQUEST_TIMEOUT_S, ProviderResult, message_text, parse_json
 
 
 class OpenAIAdapter:
@@ -11,7 +11,7 @@ class OpenAIAdapter:
 
         self.model_id = model_id
         self._factory = lambda max_tokens, schema: ChatOpenAI(
-            model=model_id, api_key=api_key, max_tokens=max_tokens, temperature=0, max_retries=0,
+            model=model_id, api_key=api_key, max_tokens=max_tokens, temperature=0, max_retries=0, timeout=REQUEST_TIMEOUT_S,
             model_kwargs={"response_format": {"type": "json_schema", "json_schema": {"name": "output", "schema": schema}}},
         )
 

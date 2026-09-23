@@ -10,7 +10,7 @@ function Invoke-Checked { param([scriptblock]$Action) & $Action; if ($LASTEXITCO
 Invoke-Checked { npm ci --cache .npm-cache }
 Invoke-Checked { npm run build }
 New-Item -ItemType Directory -Force artifacts\engine-source | Out-Null
-# Build a snapshot inside our ownership boundary; never run setuptools against Fable's working directory.
+# Build from a snapshot of the engine source so setuptools never writes into the source tree.
 Copy-Item "$EngineRoot\answer_cache_agent" artifacts\engine-source -Recurse -Force
 Copy-Item "$EngineRoot\pyproject.toml","$EngineRoot\LICENSE","$EngineRoot\README.md" artifacts\engine-source -Force
 Invoke-Checked { py -3 -m venv .venv }

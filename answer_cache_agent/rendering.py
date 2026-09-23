@@ -1,6 +1,7 @@
 """Templates are data. Placeholder detection, authorization, local substitution, post-substitution checks, leak check."""
 from __future__ import annotations
 
+import json
 import re
 from collections.abc import Mapping
 
@@ -41,8 +42,13 @@ def check_constraints(rendered: str, c: Constraints) -> list[str]:
 
 
 def find_leaks(text: str, bindings: Mapping[str, str]) -> list[str]:
-    """Variable ids whose private value appears verbatim in outbound/telemetry text."""
-    return [k for k, v in bindings.items() if len(v) >= _MIN_LEAK_LEN and v in text]
+    """Variable ids whose private value appears verbatim in outbound/telemetry text.
+
+    Outbound payloads are `json.dumps`-encoded, so a value is also matched in its JSON-escaped form
+    (non-ASCII, quotes, backslashes, newlines) — otherwise `José` would slip past as `Jos\\u00e9`.
+    """
+    return [k for k, v in bindings.items()
+            if len(v) >= _MIN_LEAK_LEN and (v in text or json.dumps(v)[1:-1] in text)]
 
 
 if __name__ == "__main__":

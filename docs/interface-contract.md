@@ -1,8 +1,8 @@
-# CODEX.md — Contract for the UI / UX / Browser-Extension Agent
+# Interface contract — building a UI, host, or browser extension on the engine
 
-_You are building the surrounding application: the Chrome extension, the local host process, the settings UI, and the bridge that calls this Python agent. This file is the map. It tells you what the agent is, what is fixed, which files are the contract, and how to verify your bridge. Read it first; the linked files have the depth._
+_For anyone building the surrounding application: a browser extension, a local host process, a settings UI, or any bridge that calls this Python agent. This file is the map: what the agent is, what is fixed, which files are the contract, and how to verify a bridge. Read it first; the linked files have the depth. The reference implementation is [`interface/`](../interface/README.md)._
 
-**Agent version:** 0.1 (all four build phases complete, 2026-09-22). **Tests:** 39 passing offline. **Nothing here is speculative** — every referenced file exists and is exercised by tests.
+**Agent version:** 0.1 (2026-09-22). **Nothing here is speculative** — every referenced file exists and is exercised by the offline test suite.
 
 ## 1. What you own vs what the agent owns
 
@@ -22,20 +22,20 @@ The agent never: submits forms, clicks, decides whether to overwrite a field, ho
 
 | Purpose | File | Notes |
 |---|---|---|
-| **Wire contract — generate your types from these** | [`schemas/*.schema.json`](schemas/) | JSON Schema 2020-12 for `Event`, the six payloads, `Result`, `CandidateOut`, `GenerationOutput`, `DiagnosisOutput`. `additionalProperties: false` everywhere. Regenerate with `python scripts/export_schemas.py` if the agent changes. |
-| Source of truth for those schemas | [`answer_cache_agent/contracts.py`](answer_cache_agent/contracts.py) | Pydantic models with field descriptions; the statuses, outcomes, variants, and unresolved-reason enums are here. |
-| **Integration guide — the detailed protocol** | [`docs/integration-guide.md`](docs/integration-guide.md) | Topology, trust boundary, every event with a JSON example, session/revision/event-id rules, exposure & feedback do/don't table, rendering spec, status → UI action table, ingest format, ship checklist. |
-| Python entrypoint you call | [`answer_cache_agent/graph.py`](answer_cache_agent/graph.py) → `RuntimeDeps`, `Agent.handle_event(event: dict) -> dict` | One `Agent` per host process; not thread-safe; rotate keys/bindings by assigning `agent.rt.credentials` / `agent.rt.bindings`. |
-| Runtime-dependency types | [`answer_cache_agent/providers/__init__.py`](answer_cache_agent/providers/__init__.py) → `Credentials`, `ModelRef`, `ModelRoles` | `ModelRef(provider="openai"\|"anthropic", model="…")`; both roles may point at the same model. |
-| Placeholder rendering (reuse or re-implement) | [`answer_cache_agent/rendering.py`](answer_cache_agent/rendering.py) | Syntax is `{{identifier}}`, nothing else. `render`, `referenced_variables`, `check_constraints`, `find_leaks`. |
-| CLI / subprocess alternative and the event-script format | [`answer_cache_agent/harness.py`](answer_cache_agent/harness.py) | `answer-cache-agent events.jsonl --db … --scope … --bindings … --json`; `$last` / `$cands.N.id` placeholders. |
-| Knowledge import format | [`answer_cache_agent/ingest.py`](answer_cache_agent/ingest.py) + [`fixtures/*/knowledge.jsonl`](fixtures/) | Your settings UI writes these records (or calls the repository API). Variable *values* never go in. |
-| **Worked examples of a full session** | [`fixtures/personal_application/events.jsonl`](fixtures/personal_application/events.jsonl), [`fixtures/org_questionnaire/events.jsonl`](fixtures/org_questionnaire/events.jsonl) | Copy these as your first bridge tests. Bindings and knowledge sit beside them. |
-| Tunables the settings UI may expose | [`answer_cache_agent/config.yaml`](answer_cache_agent/config.yaml) | Validated by [`config.py`](answer_cache_agent/config.py); pass a custom file via `RuntimeDeps(config_path=…)`. Do not invent settings that are not in this file. |
-| How it works inside (four nodes, privacy boundary, ranking, limitations) | [`docs/architecture.md`](docs/architecture.md) | Read §4 (privacy boundary) and §6 (known limitations) before designing UI copy. |
-| Product requirements and the decisions behind them | [`docs/PRD.md`](docs/PRD.md), [`docs/design-review.md`](docs/design-review.md) | The design-review "Owner decisions" block is binding. |
-| Evaluation numbers and what they do / don't claim | [`docs/evaluation-report.md`](docs/evaluation-report.md) | Regenerate with `python scripts/evaluate.py [--real]`. |
-| Build provenance | [`docs/build-record.md`](docs/build-record.md) | Hand-built; Foundry composer not used. |
+| **Wire contract — generate your types from these** | [`schemas/*.schema.json`](../schemas/) | JSON Schema 2020-12 for `Event`, the six payloads, `Result`, `CandidateOut`, `GenerationOutput`, `DiagnosisOutput`. `additionalProperties: false` everywhere. Regenerate with `python scripts/export_schemas.py` if the agent changes. |
+| Source of truth for those schemas | [`answer_cache_agent/contracts.py`](../answer_cache_agent/contracts.py) | Pydantic models with field descriptions; the statuses, outcomes, variants, and unresolved-reason enums are here. |
+| **Integration guide — the detailed protocol** | [`docs/integration-guide.md`](integration-guide.md) | Topology, trust boundary, every event with a JSON example, session/revision/event-id rules, exposure & feedback do/don't table, rendering spec, status → UI action table, ingest format, ship checklist. |
+| Python entrypoint you call | [`answer_cache_agent/graph.py`](../answer_cache_agent/graph.py) → `RuntimeDeps`, `Agent.handle_event(event: dict) -> dict` | One `Agent` per host process; not thread-safe; rotate keys/bindings by assigning `agent.rt.credentials` / `agent.rt.bindings`. |
+| Runtime-dependency types | [`answer_cache_agent/providers/__init__.py`](../answer_cache_agent/providers/__init__.py) → `Credentials`, `ModelRef`, `ModelRoles` | `ModelRef(provider="openai"\|"anthropic", model="…")`; both roles may point at the same model. |
+| Placeholder rendering (reuse or re-implement) | [`answer_cache_agent/rendering.py`](../answer_cache_agent/rendering.py) | Syntax is `{{identifier}}`, nothing else. `render`, `referenced_variables`, `check_constraints`, `find_leaks`. |
+| CLI / subprocess alternative and the event-script format | [`answer_cache_agent/harness.py`](../answer_cache_agent/harness.py) | `answer-cache-agent events.jsonl --db … --scope … --bindings … --json`; `$last` / `$cands.N.id` placeholders. |
+| Knowledge import format | [`answer_cache_agent/ingest.py`](../answer_cache_agent/ingest.py) + [`fixtures/*/knowledge.jsonl`](../fixtures/) | Your settings UI writes these records (or calls the repository API). Variable *values* never go in. |
+| **Worked examples of a full session** | [`fixtures/personal_application/events.jsonl`](../fixtures/personal_application/events.jsonl), [`fixtures/org_questionnaire/events.jsonl`](../fixtures/org_questionnaire/events.jsonl) | Copy these as your first bridge tests. Bindings and knowledge sit beside them. |
+| Tunables the settings UI may expose | [`answer_cache_agent/config.yaml`](../answer_cache_agent/config.yaml) | Validated by [`config.py`](../answer_cache_agent/config.py); pass a custom file via `RuntimeDeps(config_path=…)`. Do not invent settings that are not in this file. |
+| How it works inside (four nodes, privacy boundary, ranking, limitations) | [`docs/architecture.md`](architecture.md) | Read §4 (privacy boundary) and §6 (known limitations) before designing UI copy. |
+| Product requirements and the decisions behind them | [`docs/PRD.md`](PRD.md), [`docs/design-review.md`](design-review.md) | The design-review "Owner decisions" block is binding. |
+| Evaluation numbers and what they do / don't claim | [`docs/evaluation-report.md`](evaluation-report.md) | Regenerate with `python scripts/evaluate.py [--real]`. |
+| Build provenance | [`docs/build-record.md`](build-record.md) | What was hand-built and which reference patterns were used. |
 
 ## 3. The protocol in one screen
 
@@ -71,7 +71,7 @@ Candidate `body` is **unrendered**. Render locally, then re-check length.
 ## 5. Verify your bridge
 
 ```bash
-pip install -e ".[dev]" && pytest -q                                  # 39 passed
+pip install -e ".[dev]" && pytest -q                                  # all offline
 answer-cache-agent --demo personal_application --db /tmp/d1.db        # prints ANSWER_CACHE_AGENT_DEMO_OK
 answer-cache-agent --demo org_questionnaire --db /tmp/d2.db
 ```
@@ -80,10 +80,10 @@ Then, with your bridge in place, drive the same `fixtures/*/events.jsonl` throug
 
 For offline UI development, run the agent with `RuntimeDeps(adapters={"routine": demo_provider(), "advanced": demo_provider("fake-adv", diagnoser=True)}, embedder=HashEmbedder())` from `answer_cache_agent.providers.fake` / `answer_cache_agent.embeddings`; no keys, no model download, deterministic output.
 
-## 6. Open items the agent side has not done (do not build around assumptions)
+## 6. What the engine deliberately does not do (do not build around assumptions)
 
-- Real OpenAI/Anthropic adapters are wired and constructed under test but have not been exercised against live APIs. First live run belongs to whoever has keys; report normalization issues as issues against `providers/openai.py` / `providers/anthropic.py`.
-- No HTTP server, no native-messaging host, no packaging/installer — all yours (FDR: the agent is a library).
+- Real OpenAI/Anthropic adapters are wired and constructed under test; report normalization issues against `providers/openai.py` / `providers/anthropic.py`.
+- No HTTP server, no native-messaging host, no packaging/installer — the engine is a library; those belong to the host (see `interface/`).
 - Encryption at rest of the SQLite file is not provided; you own the private store's protection.
 - Per-question variable authorization is scope-wide in v1.
 

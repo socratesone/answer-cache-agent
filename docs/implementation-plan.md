@@ -1,6 +1,6 @@
 # Implementation Plan
 
-_Derived from `PRD.md` and the decided `design-review.md` (2026-09-21). Build record: this package is hand-built using Agent Foundry Lab examples as reference patterns (`langgraph/06_durable_agent_ops_workflow` for checkpointing/budget/resume, `langgraph/04_agent_docs_rag_graph` for retrieval, `shared/fanout_policy.py` for paid-call gating). The Foundry composer was not used; see `build-record.md` once it exists._
+_Derived from `PRD.md` and the decided `design-review.md` (2026-09-21). Build record: this package is hand-built; see `build-record.md`._
 
 ## Package layout
 

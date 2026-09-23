@@ -109,6 +109,34 @@ def test_protected_value_never_leaves(env):
         assert BINDINGS["v17"].encode() not in (blob if isinstance(blob, bytes) else blob.encode())
 
 
+def test_leak_check_catches_json_escaped_values(env):
+    """Outbound payloads are json.dumps-encoded; a non-ASCII value must not slip past the gate as \\uXXXX."""
+    agent, routine, _ = env
+    agent.rt.bindings = {**BINDINGS, "v17": "José Álvarez-Ruiz \"quoted\"\nline"}
+    r = agent._repo("s1")
+    r.add_template("L", "motivation", "José Álvarez-Ruiz \"quoted\"\nline is in this body {{v17}}", ["v17"], ["E3"], **APPROVED)
+    r.assign("template", "L", "agent_engineering")
+    rev = prepared(agent)
+    n = len(routine.calls)
+    res = agent.handle_event(ev("generate_initial", {"target_question_ids": ["q1"]}, expected=rev))
+    assert len(routine.calls) == n and res["status"] in ("failed", "partial")
+    assert any("leak" in d for d in res["diagnostics"]), res["diagnostics"]
+
+
+def test_scopes_do_not_share_events_or_sessions(env):
+    """Event and session ids are client-chosen: the same ids in another scope must be a different event/session."""
+    agent, routine, _ = env
+    rev = prepared(agent)
+    e = ev("generate_initial", {"target_question_ids": ["q1"]}, expected=rev)
+    first = agent.handle_event(e)
+    assert first["candidates"]
+    other = agent.handle_event({**e, "scope_id": "s2"})
+    assert other["status"] == "failed" and other["candidates"] == [] and "unknown session" in other["diagnostics"][0]
+    agent.handle_event(ev("prepare_form", FORM, scope="s2"))  # same session id "f1" in scope s2
+    assert agent._repo("s1").session("f1")["revision"] == rev  # s1's session untouched
+    assert agent.handle_event(e) == first  # s1 replay still intact
+
+
 def test_cached_concise_without_model_call_and_replay(env):
     agent, routine, _ = env
     rev = prepared(agent)

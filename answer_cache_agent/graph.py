@@ -104,7 +104,7 @@ class Agent:
         elif ev.expected_revision != session["revision"]:
             return c.Result(event_id=ev.event_id, status="stale_context", revision=session["revision"],
                             diagnostics=[f"expected_revision {ev.expected_revision} != {session['revision']}"]).model_dump()
-        config = {"configurable": {"thread_id": ev.session_id}}
+        config = {"configurable": {"thread_id": f"{ev.scope_id}/{ev.session_id}"}}  # session ids are per scope
         snap = self.graph.get_state(config)
         resume = bool(snap.next) and snap.values.get("event", {}).get("event_id") == ev.event_id
         initial: AgentState = {"event": evd, "payload": payload, "session": session or {}, "targets": [], "immediate": [],
@@ -339,7 +339,7 @@ class Agent:
         out = {}
         for r in repo.conn.execute(
             "SELECT f.candidate_id, f.reasons_json, f.free_text FROM feedback f JOIN candidate c ON c.id=f.candidate_id "
-            "WHERE f.outcome='rejected' AND c.session_id=? AND c.question_id=?", (session_id, qid)):
+            "WHERE f.outcome='rejected' AND c.scope_id=? AND c.session_id=? AND c.question_id=?", (repo.scope, session_id, qid)):
             out[r[0]] = {"reasons": json.loads(r[1]), "free_text": r[2]}
         for r in payload_rejected:
             out[r["candidate_id"]] = {"reasons": r["reasons"], "free_text": r["free_text"]}
@@ -347,8 +347,8 @@ class Agent:
 
     def _shown(self, repo, session_id, qid) -> list[str]:
         return [r[0] for r in repo.conn.execute(
-            "SELECT DISTINCT e.candidate_id FROM exposure e JOIN candidate c ON c.id=e.candidate_id WHERE c.session_id=? AND c.question_id=?",
-            (session_id, qid))]
+            "SELECT DISTINCT e.candidate_id FROM exposure e JOIN candidate c ON c.id=e.candidate_id "
+            "WHERE c.scope_id=? AND c.session_id=? AND c.question_id=?", (repo.scope, session_id, qid))]
 
     # -- node 3: evaluate (deterministic; the semantic evaluator is the diagnosis step above) --------
     def evaluate(self, s: AgentState) -> dict:

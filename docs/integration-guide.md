@@ -79,7 +79,7 @@ All ten public schemas are in `schemas/*.schema.json` (JSON Schema 2020-12, gene
 {
   "event_id": "8b1f…-uuid",          // unique per attempt; re-sending the same id replays the stored result
   "session_id": "form-…-uuid",       // one per form instance (tab + URL + your form fingerprint)
-  "scope_id": "user-default",        // data partition: templates/evidence/variables are only visible within a scope
+  "scope_id": "user-default",        // data partition: templates/evidence/variables, sessions and event ids are all scoped
   "type": "prepare_form",
   "expected_revision": null,         // null only on the first prepare_form; afterwards the last Result.revision
   "payload": { … }

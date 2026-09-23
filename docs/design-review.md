@@ -293,7 +293,7 @@ Derived facts are computed by a tiny whitelist of pure functions (`gte`, `lte`, 
 **A. LangGraph `SqliteSaver` checkpointer (thread = form session) + application repository in the same SQLite file.** Native durability for a mid-run crash inside one event; app tables hold everything cross-thread.
 - Adds `langgraph-checkpoint-sqlite`. Checkpoints serialize graph state — so state must be designed to hold *references and bounded working context only* (PRD §6), and private bindings/credentials must be injected via `config["configurable"]`, which is not checkpointed.
 
-**B. No LangGraph checkpointer; the repository is the only durable state.** Each event runs the graph to completion; Persist writes; state is rebuilt from tables on the next event. Simpler, one fewer dependency, but a crash between Generate (paid) and Persist loses the paid output unless Generate itself writes-through — which is what the Lab's durability principle says to do anyway.
+**B. No LangGraph checkpointer; the repository is the only durable state.** Each event runs the graph to completion; Persist writes; state is rebuilt from tables on the next event. Simpler, one fewer dependency, but a crash between Generate (paid) and Persist loses the paid output unless Generate itself writes-through — which is the right durability discipline anyway.
 
 **C. `MemorySaver` + repository.** Only useful for tests.
 
@@ -412,4 +412,4 @@ Not included: PDF/DOCX parsing, chunking, web fetching. If evidence is long, the
 
 ## What happens next
 
-Once the owner marks each blocking row as accepted or changed, the implementation plan follows directly: repository + schema (Q1, Q3, Q7, Q8, Q10), then the four nodes with the event router (Q2, Q5, Q6), then ranking (Q4), then the harness, fixtures, and the §13 acceptance scenarios. The build record will state that the Foundry composer was not used and that Lab examples `langgraph/06_durable_agent_ops_workflow`, `langgraph/04_agent_docs_rag_graph`, and `shared/fanout_policy.py` were the reference patterns.
+Once the owner marks each blocking row as accepted or changed, the implementation plan follows directly: repository + schema (Q1, Q3, Q7, Q8, Q10), then the four nodes with the event router (Q2, Q5, Q6), then ranking (Q4), then the harness, fixtures, and the §13 acceptance scenarios. The build record will state what was hand-built and which reference patterns were used.

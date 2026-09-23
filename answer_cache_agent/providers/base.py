@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from typing import Literal, Protocol, runtime_checkable
 
 ResultStatus = Literal["ok", "refusal", "truncated", "malformed", "error"]
+REQUEST_TIMEOUT_S = 60  # a hung connection must not block the single-threaded agent forever
 
 
 @dataclass(frozen=True)

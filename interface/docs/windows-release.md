@@ -39,6 +39,8 @@ For a future published extension, use the actual assigned store ID in the same i
 
 Close extension connections first. Run the newer installer into the existing directory and provide the same actual ID. Stable AppId and registry path prevent duplicate application registrations. Setup refuses to take over a native-host registration pointing at another installation directory.
 
+After replacing the files in an existing **Load unpacked** extension folder, open `chrome://extensions` and click **Reload** on Questionnaire Assistant, then refresh any open form page. Replacing files on disk alone can leave Chrome's old background worker running beside a new content script; autosave may then report “Webpage adapters cannot read local data or authorize operations.” The Reload button refreshes both parts together.
+
 Uninstall through Windows Installed Apps or `unins000.exe` in the installation directory. User data is always retained. Only a native-host registry value still pointing to this installation is removed; unrelated registry values are retained. Remove retained data manually only if you intend to permanently discard it. The extension is managed separately in Chrome.
 
 ## Verification

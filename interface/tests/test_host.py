@@ -102,6 +102,24 @@ def test_no_provider_saved_answer_roundtrip(service):
     assert service.engine().rt.adapters['routine'].calls==[]
     with pytest.raises(ValueError):service.dispatch(request('ingest',{'record':record}))
 
+def test_update_same_answer_and_index_alias(service):
+    record={'kind':'template','id':'T_salary','intent':'To ensure alignment early, what base salary range would you need to accept this role?',
+            'aliases':[],'body':'125k/year','disclosure':'local_only','approved_by':'user','approved_at':'2026-09-24'}
+    service.dispatch(request('ingest',{'record':record}))
+    renamed=service.dispatch(request('template_update',{'id':'T_salary','intent':'Salary range',
+        'alias':record['intent'],'expected_version':1}))
+    assert renamed['id']=='T_salary' and renamed['version']==1
+    changed=service.dispatch(request('template_update',{'id':'T_salary','body':'130k/year','expected_version':1}))
+    assert changed['id']=='T_salary' and changed['version']==2
+    saved=service.repo().template('T_salary')
+    assert saved['intent']=='Salary range' and saved['body']=='130k/year'
+    aliases=[r[0] for r in service.repo().conn.execute('SELECT text FROM intent_alias WHERE scope_id=? AND intent=?',(SCOPE,'Salary range'))]
+    assert record['intent'] in aliases
+    assert any(m['id']=='T_salary' for m in service.dispatch(request('search',{'query':'Salary range'}))['matches'])
+    assert any(m['id']=='T_salary' for m in service.dispatch(request('search',{'query':record['intent']}))['matches'])
+    with pytest.raises(ValueError,match='changed elsewhere'):
+        service.dispatch(request('template_update',{'id':'T_salary','body':'stale','expected_version':1}))
+
 def test_change_requires_new_session(service):
     r=call(service,event())
     service.dispatch(request('ingest',{'record':{'kind':'variable','id':'v','safe_description':'description'}}))

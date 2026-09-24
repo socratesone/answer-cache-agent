@@ -4,6 +4,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from datetime import datetime, timezone
 from typing import Literal
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, TypeAdapter
@@ -25,7 +26,7 @@ class Command(BaseModel):
     id: str = Field(min_length=1, max_length=128)
     protocol: Literal[1]
     fingerprint: str
-    operation: Literal["hello", "event", "render", "search", "ingest", "variables", "binding", "settings", "configure", "diagnostics"]
+    operation: Literal["hello", "event", "render", "search", "ingest", "template_get", "template_update", "variables", "binding", "settings", "configure", "diagnostics"]
     data: dict = Field(default_factory=dict)
 
 class Service:
@@ -85,7 +86,8 @@ class Service:
         d = c.data
         allowed = {
             "hello": set(), "event": {"event", "authorized"}, "render": {"body", "constraints"},
-            "search": {"query", "hints"}, "ingest": {"record"}, "variables": set(),
+            "search": {"query", "hints"}, "ingest": {"record"},
+            "template_get": {"id"}, "template_update": {"id", "intent", "body", "alias", "expected_version"}, "variables": set(),
             "binding": {"id", "value"}, "settings": set(), "configure": {"roles", "budget", "provider", "key"},
             "diagnostics": set(),
         }
@@ -93,12 +95,12 @@ class Service:
             raise ValueError("Unknown command fields")
         if c.operation in ("hello", "settings"):
             secret = self.private.read() if self.rt is None else {"credentials": {}, "bindings": {}}
-            return {"version": "0.1.0", "protocol": 1, "fingerprint": CONTRACT["fingerprint"],
+            return {"version": "0.1.1", "protocol": 1, "fingerprint": CONTRACT["fingerprint"],
                     "configured": bool(secret["credentials"]), "generationReady": bool(self.settings().get("roles") and all(secret["credentials"].get(ref["provider"] + "_api_key") for ref in self.settings()["roles"].values())),
                     "settings": self.settings(), "budget": load_config(self.directory / "engine.yaml" if (self.directory / "engine.yaml").exists() else None).budget.model_dump(),
                     "capabilities": {"autofill": False, "libraryEnumeration": False, "cancellation": False, "portability": False, "modelCatalogue": False}}
         if c.operation == "diagnostics":
-            return {"application": "0.1.0", "protocol": 1, "contract": CONTRACT["fingerprint"],
+            return {"application": "0.1.1", "protocol": 1, "contract": CONTRACT["fingerprint"],
                     "engineLoaded": self.agent is not None, "platformProtection": "Windows DPAPI", "analytics": False}
         if c.operation == "event":
             ev = Event.model_validate(d["event"])
@@ -143,7 +145,7 @@ class Service:
                 t = repo.template(identity)
                 if t and t["status"] == "approved" and requires_satisfied(t["requires"], context):
                     # Local reuse allows local_only; this is not a generation bundle or a uniqueness decision.
-                    matches.append({"id": t["id"], "body": t["body"], "intent": t["intent"], "status": t["status"],
+                    matches.append({"id": t["id"], "body": t["body"], "intent": t["intent"], "version": t["version"], "status": t["status"],
                                     "applies": {k: sorted(v) for k,v in t["applies"].items()}, "similarity": similarity})
             return {"matches": matches, "complete": False, "autofillEligible": False}
         if c.operation == "ingest":
@@ -158,6 +160,44 @@ class Service:
             self.epoch += 1
             self.save_epochs()
             return {"created": dict(counts), "refreshRequired": True}
+        if c.operation == "template_get":
+            identity = d.get("id")
+            if not isinstance(identity, str) or not identity or len(identity) > 128:
+                raise ValueError("Invalid template ID")
+            t = self.repo().template(identity)
+            if not t or t["status"] != "approved":
+                raise ValueError("Saved answer is unavailable")
+            return {"id": t["id"], "intent": t["intent"], "body": t["body"], "version": t["version"]}
+        if c.operation == "template_update":
+            identity = d.get("id")
+            if not isinstance(identity, str) or not identity or len(identity) > 128:
+                raise ValueError("Invalid template ID")
+            repo = self.repo()
+            old = repo.template(identity)
+            if not old or old["status"] != "approved":
+                raise ValueError("Saved answer is unavailable")
+            if d.get("expected_version") != old["version"]:
+                raise ValueError("Saved answer changed elsewhere. Refresh it before editing.")
+            intent = d.get("intent", old["intent"])
+            body = d.get("body", old["body"])
+            alias = d.get("alias")
+            if not isinstance(intent, str) or not intent.strip() or len(intent) > 2000:
+                raise ValueError("Enter a label of at most 2,000 characters")
+            if not isinstance(body, str) or not body.strip() or len(body) > 100000:
+                raise ValueError("Enter answer wording of at most 100,000 characters")
+            if alias is not None and (not isinstance(alias, str) or not alias.strip() or len(alias) > 2000):
+                raise ValueError("Invalid question alias")
+            # Keep the same record, disclosure, variables, evidence and context assignments.
+            # Moving an intent also retains its old wording and aliases for future retrieval.
+            old_aliases = [r[0] for r in repo.conn.execute(
+                "SELECT text FROM intent_alias WHERE scope_id=? AND intent=?", (SCOPE, old["intent"]))]
+            for text in set([old["intent"], intent, *old_aliases, *([alias] if alias else [])]):
+                repo.add_intent_alias(intent, text)
+            repo.add_template(identity, intent, body, old["variables"], old["evidence_ids"],
+                              old["disclosure"], "user", datetime.now(timezone.utc).isoformat(), old["origin_candidate_id"])
+            self.epoch += 1
+            self.save_epochs()
+            return {"id": identity, "version": repo.template(identity)["version"], "intent": intent}
         if c.operation == "variables":
             return {"variables": self.repo().variables()}
         if c.operation == "binding":

@@ -28,8 +28,12 @@ with urlopen(license_url, timeout=30) as response:
 if b"MIT License" not in license_text:
     raise RuntimeError("Unexpected model license: review before release")
 (target / "LICENSE.FlagEmbedding").write_bytes(license_text)
-(root / "artifacts" / "model-provenance.json").write_text(json.dumps({
+provenance = {
     "model": load_config().retrieval.embedding_model,
     "license_source": license_url,
     "files": {str(p.relative_to(target)): hashlib.sha256(p.read_bytes()).hexdigest() for p in target.rglob("*") if p.is_file()}
-}, indent=2))
+}
+lock = root / "packaging" / "model-lock.json"
+if provenance != json.loads(lock.read_text(encoding="utf-8")):
+    raise RuntimeError("Model assets differ from packaging/model-lock.json; review upstream changes before updating the lock")
+(root / "artifacts" / "model-provenance.json").write_text(json.dumps(provenance, indent=2), encoding="utf-8")

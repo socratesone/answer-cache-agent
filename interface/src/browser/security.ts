@@ -3,7 +3,7 @@ export function trustedPage(
   extensionId: string,
 ) {
   if (sender.id !== extensionId) return false;
-  return ["panel.html", "manage.html", "demo.html"].some(
+  return ["popup.html", "manage.html", "demo.html"].some(
     (path) => sender.url === `chrome-extension://${extensionId}/${path}`,
   );
 }

@@ -6,3 +6,8 @@ __pycache__/
 *.db-shm
 .npm-cache/
 WHERE_I_LEFT_OFF.md
+/.venv/
+/build/
+/acceptance-*/
+/QuestionnaireAssistantExtension/
+*.log

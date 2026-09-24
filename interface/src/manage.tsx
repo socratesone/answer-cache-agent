@@ -3,6 +3,8 @@ import { createRoot } from "react-dom/client";
 import { Brand, Notice, Unavailable } from "./components/common";
 import { host } from "./integration/client";
 import type { HostInfo, Match } from "./integration/types";
+import { profiles, saveProfiles } from "./integration/profiles";
+import type { Profiles } from "./integration/profiles";
 import "./styles.css";
 const tabs = [
   "Overview",
@@ -33,6 +35,7 @@ function App() {
     [categoryLabel, setCategoryLabel] = useState(""),
     [valueId, setValueId] = useState(""),
     [valueLabel, setValueLabel] = useState("");
+  const [profileList, setProfileList] = useState<Profiles | null>(null);
   const [provider, setProvider] = useState("openai"),
     [key, setKey] = useState(""),
     [routine, setRoutine] = useState(""),
@@ -70,6 +73,7 @@ function App() {
     void connect().catch((e) =>
       setMessage(`Companion not connected. ${e.message}`),
     );
+    void profiles().then(setProfileList);
   }, []);
   const loadVariables = async () =>
     setVariables((await host("variables")).variables);
@@ -180,8 +184,8 @@ function App() {
                   </li>
                   <li>Create an answer in the Answers tab.</li>
                   <li>
-                    Open a test form, activate the extension, and preview your
-                    saved answer.
+                    Open a form, click the extension icon, choose Start, and
+                    select saved answers beside the fields.
                   </li>
                 </ol>
                 <div className="actions">
@@ -249,8 +253,8 @@ function App() {
                   </article>
                 ))}
                 <Unavailable>
-                  Complete library browsing and existing-template editing are
-                  unavailable.
+                  Complete library browsing is unavailable. You can edit a
+                  returned answer's label and wording inline on a form.
                 </Unavailable>
               </section>
               <section className="card">
@@ -480,6 +484,19 @@ function App() {
                 automatically.
               </p>
               <section className="card">
+                <h2>Default answer category</h2>
+                <label>Use when a session starts
+                  <select value={profileList?.defaultId || "default"} onChange={(e) => void run(async () => {
+                    const current = await profiles();
+                    const updated = { ...current, defaultId: e.target.value };
+                    await saveProfiles(updated); setProfileList(updated);
+                  })}>
+                    {(profileList?.items || []).map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+                  </select>
+                </label>
+                <p className="muted">Create a value below to make it selectable in the extension popup.</p>
+              </section>
+              <section className="card">
                 <h2>Create a category</h2>
                 <label>
                   Category name
@@ -552,8 +569,13 @@ function App() {
                           label: valueLabel,
                         },
                       });
+                      const current = await profiles();
+                      const profileId = `${categoryId}__${valueId}`;
+                      const updated = { ...current, items: [...current.items.filter((p) => p.id !== profileId),
+                        { id: profileId, label: valueLabel, dimension: categoryId, value: valueId }] };
+                      await saveProfiles(updated); setProfileList(updated);
                       setMessage(
-                        `Value created: ${valueId}. Use these IDs in the panel’s context controls.`,
+                        `Value created: ${valueId}. Select it in the popup or make it the default above.`,
                       );
                     })
                   }
@@ -562,7 +584,7 @@ function App() {
                 </button>
               </section>
               <Unavailable>
-                Listing, renaming and deleting categories are unavailable.
+                Existing engine categories cannot yet be listed or edited.
               </Unavailable>
             </>
           )}

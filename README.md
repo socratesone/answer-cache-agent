@@ -6,16 +6,18 @@
 
 A LangGraph agent that turns a questionnaire's questions plus your own approved material into grounded answer *templates* — symbolic text with `{{variable}}` placeholders — ranks them by context, learns from what you pick, and keeps private values and provider keys out of every model request. Local-first: one SQLite file (data, vector index, checkpoints), local ONNX embeddings, your own OpenAI/Anthropic key.
 
+Built for the [Questionnaire Completion Agent PRD](docs/PRD.md). Design decisions: [`docs/design-review.md`](docs/design-review.md). How it works: [`docs/architecture.md`](docs/architecture.md). Integrating a UI or browser extension: [`docs/integration-guide.md`](docs/integration-guide.md). What was generated vs hand-built: [`docs/build-record.md`](docs/build-record.md).
+
 ## Repository layout
 
 - `answer_cache_agent/` — the engine: a Python library plus the `answer-cache-agent` CLI. This README covers it.
-- `interface/` — **Questionnaire Assistant**, the end-user product built on the engine: a Chrome MV3 extension and a Windows native-messaging companion. In progress; see [`interface/README.md`](interface/README.md) and the [engine gap list](interface/docs/engine-gaps.md) for what it can and cannot do yet.
+- `interface/` — **Questionnaire Assistant**, the end-user product built on the engine: a Chrome MV3 extension and a Windows native-messaging companion. In progress; see [`interface/README.md`](interface/README.md) and the [engine gap list](interface/docs/engine-gaps.md) for current limitations.
 - `docs/` — PRD, design decisions, architecture, integration guide, and the [interface contract](docs/interface-contract.md) for anyone building a UI or host on the engine.
-- `schemas/` — the exported JSON Schema wire contract. `fixtures/` — synthetic demo data (no real people or organisations).
-
-Built for the [Questionnaire Completion Agent PRD](docs/PRD.md). Design decisions: [`docs/design-review.md`](docs/design-review.md). How it works: [`docs/architecture.md`](docs/architecture.md). Integrating a UI or browser extension: [`docs/integration-guide.md`](docs/integration-guide.md). What was generated vs hand-built: [`docs/build-record.md`](docs/build-record.md).
+- `schemas/` — the exported JSON Schema wire contract. `fixtures/` — synthetic demo data.
 
 ## Install
+
+For the Windows Chrome companion, see [installer build, extension setup, and uninstall instructions](interface/docs/windows-release.md). The per-user installer bundles Python, native dependencies, and the local embedding model; end users do not need Python or WSL. The commands below are for engine development.
 
 ```bash
 pip install -e ".[dev]"

@@ -41,7 +41,8 @@ def allowed_origin(origin, origins):
     return isinstance(origin, str) and origin in origins and origin.startswith("chrome-extension://") and origin.endswith("/")
 
 def main():
-    origin_file = Path(__file__).with_name("allowed-origins.json")
+    origin_file = (Path(sys.executable).parent if getattr(sys, "frozen", False)
+                   else Path(__file__).parent) / "allowed-origins.json"
     origins = json.loads(origin_file.read_text()) if origin_file.exists() else []
     if len(sys.argv) < 2 or not allowed_origin(sys.argv[1], origins) or os.name != "nt":
         return 2

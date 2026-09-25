@@ -24,6 +24,8 @@ try {
         if (-not (Test-Path '.venv\Scripts\python.exe')) { Invoke-Checked { py -3.10 -m venv .venv } }
     }
     $Python = Join-Path $EngineRoot '.venv\Scripts\python.exe'
+    # A pre-existing .venv may have been created by another interpreter; validate the one actually used for packaging.
+    Invoke-Checked { & $Python -c 'import sys,struct; assert sys.version_info[:2] == (3,10) and struct.calcsize(chr(80)) == 8, sys.version' }
     # Install the engine from a build snapshot so setuptools leaves source files untouched.
     $EngineSnapshot = Join-Path $InterfaceRoot ('artifacts\engine-source-' + [Guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $EngineSnapshot -Force | Out-Null

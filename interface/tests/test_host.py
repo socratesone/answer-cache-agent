@@ -108,9 +108,11 @@ def test_update_same_answer_and_index_alias(service):
     service.dispatch(request('ingest',{'record':record}))
     renamed=service.dispatch(request('template_update',{'id':'T_salary','intent':'Salary range',
         'alias':record['intent'],'expected_version':1}))
-    assert renamed['id']=='T_salary' and renamed['version']==1
-    changed=service.dispatch(request('template_update',{'id':'T_salary','body':'130k/year','expected_version':1}))
-    assert changed['id']=='T_salary' and changed['version']==2
+    assert renamed['id']=='T_salary' and renamed['version']==2 and renamed['refreshRequired'] is True
+    with pytest.raises(ValueError,match='changed elsewhere'):  # a rename is a change; stale editors must refresh
+        service.dispatch(request('template_update',{'id':'T_salary','intent':'Other label','expected_version':1}))
+    changed=service.dispatch(request('template_update',{'id':'T_salary','body':'130k/year','expected_version':2}))
+    assert changed['id']=='T_salary' and changed['version']==3
     saved=service.repo().template('T_salary')
     assert saved['intent']=='Salary range' and saved['body']=='130k/year'
     aliases=[r[0] for r in service.repo().conn.execute('SELECT text FROM intent_alias WHERE scope_id=? AND intent=?',(SCOPE,'Salary range'))]

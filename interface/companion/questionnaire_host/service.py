@@ -197,7 +197,7 @@ class Service:
                               old["disclosure"], "user", datetime.now(timezone.utc).isoformat(), old["origin_candidate_id"])
             self.epoch += 1
             self.save_epochs()
-            return {"id": identity, "version": repo.template(identity)["version"], "intent": intent}
+            return {"id": identity, "version": repo.template(identity)["version"], "intent": intent, "refreshRequired": True}
         if c.operation == "variables":
             return {"variables": self.repo().variables()}
         if c.operation == "binding":

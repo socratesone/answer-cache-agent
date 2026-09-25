@@ -570,8 +570,11 @@ function App() {
                         },
                       });
                       const current = await profiles();
-                      const profileId = `${categoryId}__${valueId}`;
-                      const updated = { ...current, items: [...current.items.filter((p) => p.id !== profileId),
+                      // Profile ids are opaque: engine ids may contain characters the profile loader rejects,
+                      // and joining them is ambiguous. Deduplicate on the (dimension, value) pair instead.
+                      const same = (p: { dimension: string; value: string }) => p.dimension === categoryId && p.value === valueId;
+                      const profileId = current.items.find(same)?.id ?? `p_${crypto.randomUUID().replaceAll("-", "")}`;
+                      const updated = { ...current, items: [...current.items.filter((p) => !same(p)),
                         { id: profileId, label: valueLabel, dimension: categoryId, value: valueId }] };
                       await saveProfiles(updated); setProfileList(updated);
                       setMessage(

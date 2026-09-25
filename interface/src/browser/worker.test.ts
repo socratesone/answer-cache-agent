@@ -172,3 +172,36 @@ it("fills an empty field from an explicitly learned question mapping", async () 
   await new Promise(resolve=>setTimeout(resolve,0));
   expect(chromeMock.tabs.sendMessage).toHaveBeenCalledWith(1,expect.objectContaining({type:"insert",text:"125k/year",replace:false}),{documentId:"doc"});
 });
+it("keeps both mappings when two fields autosave at the same time", async () => {
+  storage["session:1"]={id:"session",categoryId:"default"};
+  storage["page:1"]={tabId:1,documentId:"doc",documentToken:"token",fields:[
+    {id:"a",formId:"form",question:"First question",kind:"text",version:0,signature:"sig"},
+    {id:"b",formId:"form",question:"Second question",kind:"text",version:0,signature:"sig"}]};
+  delete local.questionAliases;
+  port.postMessage.mockImplementation((request:any)=>queueMicrotask(()=>{
+    port.onMessage.addListener.mock.calls[0][0]({id:request.id,ok:true,data:{}});
+  }));
+  const sender={id:"test",tab:{id:1},frameId:0,documentId:"doc",url:"https://example.test/form"};
+  const target=(id:string)=>({id,formId:"form",tabId:1,documentId:"doc",documentToken:"token",version:0,signature:"sig"});
+  const replies=await Promise.all([
+    send({type:"field.autosave",target:target("a"),body:"one"},sender),
+    send({type:"field.autosave",target:target("b"),body:"two"},sender)]);
+  expect(replies.map(r=>r.ok)).toEqual([true,true]);
+  expect(Object.keys(local.questionAliases).sort()).toEqual(["default:first question","default:second question"]);
+});
+it("drops cached AI form sessions after local data changes", async () => {
+  storage["session:1"]={id:"session",categoryId:"default"};
+  storage["page:1"]={tabId:1,documentId:"doc",documentToken:"token",fields:[{id:"q",formId:"form",question:"Salary range",kind:"text",version:2,signature:"sig"}]};
+  storage["ai:1:token:form"]={id:"engine-session",revision:"rev-1",prepared:true};
+  local.questionAliases={"default:salary range":{id:"T_salary",intent:"Salary range"}};
+  port.postMessage.mockImplementation((request:any)=>queueMicrotask(()=>{
+    const data=request.operation==="template_get"?{id:"T_salary",intent:"Salary range",body:"125k/year",version:1}:
+      request.operation==="template_update"?{id:"T_salary",intent:"Salary range",version:2,refreshRequired:true}:{};
+    port.onMessage.addListener.mock.calls[0][0]({id:request.id,ok:true,data});
+  }));
+  const reply=await send({type:"field.autosave",target:{id:"q",formId:"form",tabId:1,documentId:"doc",documentToken:"token",version:2,signature:"sig"},body:"130k/year"},
+    {id:"test",tab:{id:1},frameId:0,documentId:"doc",url:"https://example.test/form"});
+  expect(reply.ok).toBe(true);
+  expect(storage["ai:1:token:form"]).toBeUndefined();
+  expect(storage["page:1"]).toBeDefined();
+});

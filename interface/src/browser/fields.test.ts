@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from "vitest";
-import { eligible, questionFor, assignText, assignChoice, valueOf, mayUndo, optionsFor, groupFor, kindOf, canOfferAi } from "./fields";
+import { eligible, questionFor, assignText, assignChoice, valueOf, mayUndo, optionsFor, groupFor, kindOf, canOfferAi, normalize } from "./fields";
 import { trustedPage, supportedUrl } from "./security";
 beforeEach(() => {
   document.body.innerHTML = "";
@@ -49,6 +49,15 @@ describe("field safety", () => {
     expect(optionsFor(el)).toEqual(["Colorado"]);
     expect(await assignChoice(el,"Colorado")).toBe(true);
     expect(el.value).toBe("CO");
+  });
+  it("keeps non-Latin letters in mapping keys and option matching", async () => {
+    expect(normalize("現在の勤務先")).toBe("現在の勤務先");
+    expect(normalize("現在の勤務先")).not.toBe(normalize("希望年収"));
+    expect(normalize("Zürich, Straße 1!")).toBe("zürich straße 1");
+    document.body.innerHTML='<label for="c">都市</label><select id="c"><option value="">選択</option><option value="1">東京</option><option value="2">大阪</option></select>';
+    const el=document.querySelector("select")!;
+    expect(await assignChoice(el,"大阪")).toBe(true);
+    expect(el.value).toBe("2");
   });
   it("collapses a yes/no checkbox question and selects the answer", async () => {
     document.body.innerHTML='<fieldset><legend>Need sponsorship?</legend><label><input type="checkbox" value="yes">Yes</label><label><input type="checkbox" value="no">No</label></fieldset>';

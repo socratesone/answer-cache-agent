@@ -40,7 +40,7 @@ async function native(
       waiting.clear();
     });
   }
-  return new Promise((resolve, reject) => {
+  const reply = new Promise<any>((resolve, reject) => {
     waiting.set(id, { resolve, reject });
     try {
       port!.postMessage({
@@ -55,6 +55,15 @@ async function native(
       reject(e);
     }
   });
+  // Any local-data mutation advances the host epoch, which rejects every prepared engine session;
+  // drop the cached ai:* sessions so the next AI action re-prepares instead of failing.
+  if (INVALIDATING.has(operation)) await reply.then(dropAiSessions, () => {});
+  return reply;
+}
+const INVALIDATING = new Set(["ingest", "template_update", "binding", "configure"]);
+async function dropAiSessions() {
+  const keys = Object.keys(await chrome.storage.session.get(null)).filter((k) => k.startsWith("ai:"));
+  if (keys.length) await chrome.storage.session.remove(keys);
 }
 async function getPage() {
   await ready;
@@ -108,11 +117,14 @@ async function aliasRecord(tabId:number, question:string) {
   const all=(await chrome.storage.local.get("questionAliases")).questionAliases as Record<string,{id:string;intent:string}>|undefined;
   return all?.[aliasKey(s?.categoryId || "default",question)] || null;
 }
-async function storeAlias(tabId:number,question:string,id:string,intent:string) {
-  const s=await session(tabId);
-  const current=(await chrome.storage.local.get("questionAliases")).questionAliases || {};
-  current[aliasKey(s?.categoryId||"default",question)]={id,intent};
-  await chrome.storage.local.set({questionAliases:current});
+function storeAlias(tabId:number,question:string,id:string,intent:string) {
+  // Whole-map read/modify/write: serialize so concurrent autosaves for two fields cannot drop each other's mapping.
+  return queued("questionAliases",async()=>{
+    const s=await session(tabId);
+    const current=(await chrome.storage.local.get("questionAliases")).questionAliases || {};
+    current[aliasKey(s?.categoryId||"default",question)]={id,intent};
+    await chrome.storage.local.set({questionAliases:current});
+  });
 }
 async function visible(tabId:number,fieldId:string):Promise<Array<{id:string;intent:string;body:string;version:number}>> {
   return (await chrome.storage.session.get(`visible:${tabId}:${fieldId}`))[`visible:${tabId}:${fieldId}`] || [];

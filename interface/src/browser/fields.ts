@@ -1,6 +1,7 @@
 const sensitive = /(password|passcode|\botp\b|one.?time|verification.?code|security.?code|credit.?card|card.?number|\bcvv\b|\bcvc\b|auth.?code)/i;
 export type ControlKind = "text" | "select" | "radio" | "checkbox" | "combobox" | "file";
-export const normalize = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+// Keys mappings and option matching; must keep non-Latin letters or every CJK question collides on "".
+export const normalize = (text: string) => text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
 function labelled(el: HTMLElement) {
   const ids = el.getAttribute("aria-labelledby")?.split(/\s+/) || [];
   const explicit = ids.map((id) => document.getElementById(id)?.textContent || "").join(" ").trim();

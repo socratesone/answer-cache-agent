@@ -1,18 +1,20 @@
 {
   "manifest_version": 3,
   "name": "Questionnaire Assistant",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "minimum_chrome_version": "116",
   "description": "Reuse your local answers and request AI help deliberately. Requires the local companion.",
   "permissions": [
     "activeTab",
     "scripting",
-    "sidePanel",
+    "webNavigation",
     "nativeMessaging",
     "storage"
   ],
+  "optional_host_permissions": ["http://*/*", "https://*/*"],
   "action": {
-    "default_title": "Open Questionnaire Assistant",
+    "default_title": "Questionnaire Assistant",
+    "default_popup": "popup.html",
     "default_icon": {
       "16": "icon16.png",
       "32": "icon32.png"
@@ -21,9 +23,6 @@
   "background": {
     "service_worker": "worker.js",
     "type": "module"
-  },
-  "side_panel": {
-    "default_path": "panel.html"
   },
   "options_page": "manage.html",
   "content_security_policy": {

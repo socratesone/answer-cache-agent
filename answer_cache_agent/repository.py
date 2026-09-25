@@ -95,8 +95,9 @@ class Repository:
     def add_template(self, id: str, intent: str, body: str, variables: list[str], evidence_ids: list[str],
                      disclosure: str, approved_by: str, approved_at: str, origin_candidate_id: str | None = None) -> None:
         with self.transaction():
-            prev = self.conn.execute("SELECT version, body FROM template WHERE scope_id=? AND id=?", (self.scope, id)).fetchone()
-            version = prev[0] + 1 if prev and prev[1] != body else (prev[0] if prev else 1)
+            prev = self.conn.execute("SELECT version, body, intent FROM template WHERE scope_id=? AND id=?", (self.scope, id)).fetchone()
+            # Version is the optimistic-concurrency token for editors, so a rename counts as a change too.
+            version = prev[0] + 1 if prev and (prev[1], prev[2]) != (body, intent) else (prev[0] if prev else 1)
             self.conn.execute(
                 "INSERT OR REPLACE INTO template VALUES (?,?,?,?,?,'approved',?,?,?,NULL,?)",
                 (id, self.scope, intent, body, version, disclosure, approved_by, approved_at, origin_candidate_id))

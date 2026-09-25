@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile, cp, readdir } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
+import { resolve } from "node:path";
 await mkdir("artifacts", { recursive: true });
 const manifest = JSON.parse(await readFile("dist/manifest.json", "utf8"));
 if (manifest.host_permissions?.length || manifest.externally_connectable)
@@ -25,14 +26,7 @@ for (const [directory, metadata] of Object.entries(lock.packages)) {
     }
   }
 }
-execFileSync(
-  process.platform === "win32" ? "py" : "python",
-  [
-    "-c",
-    'import shutil; shutil.make_archive("artifacts/questionnaire-extension-0.1.0", "zip", "dist")',
-  ],
-  { stdio: "inherit" },
-);
+execFileSync("tar", ["-a", "-c", "-f", resolve(`artifacts/questionnaire-extension-${manifest.version}.zip`), "-C", "dist", "."], { stdio: "inherit" });
 console.log(
   "Prepared extension zip. Store submission and approval are not performed.",
 );

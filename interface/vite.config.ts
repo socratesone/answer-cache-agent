@@ -6,7 +6,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        panel: resolve(__dirname, "panel.html"),
+        popup: resolve(__dirname, "popup.html"),
         manage: resolve(__dirname, "manage.html"),
         demo: resolve(__dirname, "demo.html"),
         worker: resolve(__dirname, "src/browser/worker.ts"),

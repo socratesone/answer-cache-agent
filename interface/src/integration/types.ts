@@ -14,8 +14,11 @@ export type Field = {
   prefilled: boolean;
   version: number;
   signature: string;
+  kind?: "text" | "select" | "radio" | "checkbox" | "combobox" | "file";
+  options?: string[];
 };
 export type Page = {
+  scanSeq?: number;
   intent?: { id: string; mode: "saved" | "ai"; fieldId: string };
   documentToken: string;
   url: string;
@@ -50,6 +53,7 @@ export type Match = {
   intent: string;
   status: string;
   similarity: number;
+  version?: number;
   applies: Record<string, string[]>;
 };
 export type Target = Pick<Field, "id" | "formId" | "version" | "signature"> & {
